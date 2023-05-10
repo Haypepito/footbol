@@ -4,13 +4,13 @@ PROGRAM-ID. footbol.
 ENVIRONMENT DIVISION.
 INPUT-OUTPUT SECTION.
 FILE-CONTROL.
-       SELECT futilisateur ASSIGN TO "utilisateurs.dat"
-       ORGANIZATION IS INDEXED
-       ACCESS MODE IS DYNAMIC
-       RECORD KEY IS fu_numutilisateur
-       ALTERNATE RECORD KEY IS fu_nom WITH DUPLICATES
-       ALTERNATE RECORD KEY IS fu_mail WITH DUPLICATES
-       FILE STATUS IS cr_futilisateur.
+        SELECT futilisateur ASSIGN TO "utilisateurs.dat"
+        ORGANIZATION IS INDEXED
+        ACCESS MODE IS DYNAMIC
+        RECORD KEY IS fu_numutilisateur
+        ALTERNATE RECORD KEY IS fu_nom WITH DUPLICATES
+        ALTERNATE RECORD KEY IS fu_mail WITH DUPLICATES
+        FILE STATUS IS cr_utilisateur.
 
        SELECT flieu ASSIGN TO "lieux.dat"
        ORGANIZATION IS INDEXED
