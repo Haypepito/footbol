@@ -1,71 +1,96 @@
 IDENTIFICATION DIVISION.
-PROGRAM-ID. biathlon.
+PROGRAM-ID. footbol.
 
 ENVIRONMENT DIVISION.
 INPUT-OUTPUT SECTION.
 FILE-CONTROL.
-        SELECT fcompetitions assign to "competitions.dat"
-        organization sequential
-        access mode is sequential
-        file status is cr_fcompetitions.
-        
-        SELECT fathletes assign to "athletes.dat"
-        organization indexed
-        access mode is dynamic
-        file status is cr_fathletes
-        record key is fco_numA
-        
-        SELECT fcourses assign to "courses.dat"
-        organization indexed
-        access mode is dynamic
-        file status is cr_fcourses
-        record key is fc_numCo
-        
-        SELECT fparticipants assign to "participants.dat"
-        organization indexed
-        access mode is dynamic
-        file status is cr_participants
-        record key is fp_cle
-        alternate record key is fp_numCo WITH DUPLICATES
-        alternate record key is fp_numA WITH DUPLICATES.
-        
+       SELECT futilisateur ASSIGN TO "utilisateurs.dat"
+       ORGANIZATION IS INDEXED
+       ACCESS MODE IS DYNAMIC
+       RECORD KEY IS fu_numutilisateur
+       ALTERNATE RECORD KEY IS fu_nom WITH DUPLICATES
+       ALTERNATE RECORD KEY IS fu_mail WITH DUPLICATES
+       FILE STATUS IS fs_Futilisateur.
+
+       SELECT flieu ASSIGN TO "lieux.dat"
+       ORGANIZATION IS INDEXED
+       ACCESS MODE IS DYNAMIC
+       RECORD KEY IS fl_numlieu
+       ALTERNATE RECORD KEY IS fl_adresse WITH DUPLICATES
+       ALTERNATE RECORD KEY IS fl_gerant WITH DUPLICATES
+       FILE STATUS IS fs_Flieu.
+
+       SELECT freservation ASSIGN TO "reservations.dat"
+       ORGANIZATION IS INDEXED
+       ACCESS MODE IS DYNAMIC
+       RECORD KEY IS fr_cleres
+       ALTERNATE RECORD KEY IS fr_numutilisateur WITH DUPLICATES
+       FILE STATUS IS fs_Freservation.
+
+       SELECT fterrain ASSIGN TO "terrains.dat"
+       ORGANIZATION IS INDEXED
+       ACCESS MODE IS DYNAMIC
+       RECORD KEY IS ft_numterrain
+       ALTERNATE RECORD KEY IS ft_lieu WITH DUPLICATES
+       FILE STATUS IS fs_Fterrain.
+
+       SELECT fstat ASSIGN TO "statistiques.dat"
+       ORGANIZATION IS INDEXED
+       ACCESS MODE IS DYNAMIC
+       RECORD KEY IS fs_cle
+       ALTERNATE RECORD KEY IS fs_lieu WITH DUPLICATES
+       ALTERNATE RECORD KEY IS fs_mois WITH DUPLICATES
+       FILE STATUS IS fs_Fstat.
 
 DATA DIVISION.
 
-FILE SECTION.
-FD fcompetitions.
-        01 Tcompetition.
-            02 fco_ville PIC X(30).
-            02 fco_pays PIC X(15).
-            02 fco_semaine PIC 9(2).
-            02 fco_nbj PIC 9.
 
-FD fathletes.
-        01 Tathlete.
-            02 fa_numA PIC 9(3).
-            02 fa_nom PIC X(30).
-            02 fa_prenom PIC X(30).
-            02 fa_pays PIC X(30).
-            02 fa_annee PIC 9(4).
-            02 fa_classementP PIC 9(3).
-                
-FD fcourses.
-        01 Tcourses.
-            02 fc_numCo PIC 9(2).
-            02 fc_villeCompet PIC X(30).
-            02 fc_typeCo PIC X(15).
-            02 fc_nbpassage PIC 9.
-            02 fc_nbkms PIC 9(2).
-                
-FD fparticipants.
-        01 Tparticipant.
-            02 fp_cle.
-                03 fp_numCo PIC 9(2).
-                03 fp_numA PIC 9(3).
-            02 fp_classement PIC 9(3).
-            02 fp_temps PIC 9(4).
-            02 fp_penalites PIC 9(2).
-            02 fp_points PIC 9(2).
+FILE SECTION.
+FD Futilisateur.
+   01 Tutilisateur.
+      02 fu_numutilisateur PIC S9(9).
+      02 fu_nom PIC X(30).
+      02 fu_prenom PIC X(30).
+      02 fu_mail PIC X(50).
+      02 fu_mdp PIC X(20).
+      02 fu_role PIC S9(2).
+
+FD Flieu.
+   01 Tlieu.
+      02 fl_numlieu PIC S9(9).
+      02 fl_gerant PIC S9(9).
+      02 fl_adresse PIC X(50).
+      02 fl_terrain_existant PIC S9(9).
+
+FD Freservation.
+   01 Treservation.
+      02 fr_cleres.
+         03 fr_numterrain PIC S9(9).
+         03 fr_heure PIC S9(2).
+         03 fr_date PIC X(10).
+      02 fr_numutilisateur PIC X(50).
+      02 fr_materiel PIC X.
+
+FD Fterrain.
+   01 Tterrain.
+      02 ft_numterrain PIC S9(9).
+      02 ft_lieu PIC X(50).
+      02 ft_longueur PIC S9(4).
+      02 ft_largeur PIC S9(4).
+      02 ft_type PIC X(20).
+      02 ft_prix PIC S9(5).
+      02 ft_couvert PIC X.
+
+FD Fstat.
+   01 Tstat.
+      02 fs_cle.
+         03 fs_lieu PIC X(50).
+         03 fs_mois PIC S9(2).
+      02 fs_type_reservation_gazon PIC S9(9).
+      02 fs_type_reservation_synthetique PIC S9(9).
+      02 fs_type_reservation_falin PIC S9(9).
+      02 fs_materiel PIC S9(9).
+
 
 WORKING-STORAGE SECTION.
         01 new_competition.
