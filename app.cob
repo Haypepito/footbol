@@ -5,7 +5,7 @@ ENVIRONMENT DIVISION.
 INPUT-OUTPUT SECTION.
 FILE-CONTROL.
        SELECT futilisateur ASSIGN TO "utilisateurs.dat"
-       ORGANIZATION IS INDEAED
+       ORGANIZATION IS INDEXED
        ACCESS MODE IS DYNAMIC
        RECORD KEY IS fu_numutilisateur
        ALTERNATE RECORD KEY IS fu_nom WITH DUPLICATES
@@ -13,7 +13,7 @@ FILE-CONTROL.
        FILE STATUS IS cr_futilisateur.
 
        SELECT flieu ASSIGN TO "lieux.dat"
-       ORGANIZATION IS INDEAED
+       ORGANIZATION IS INDEXED
        ACCESS MODE IS DYNAMIC
        RECORD KEY IS fl_numlieu
        ALTERNATE RECORD KEY IS fl_adresse WITH DUPLICATES
@@ -21,21 +21,21 @@ FILE-CONTROL.
        FILE STATUS IS cr_flieu.
 
        SELECT freservation ASSIGN TO "reservations.dat"
-       ORGANIZATION IS INDEAED
+       ORGANIZATION IS INDEXED
        ACCESS MODE IS DYNAMIC
        RECORD KEY IS fr_cleres
        ALTERNATE RECORD KEY IS fr_numutilisateur WITH DUPLICATES
        FILE STATUS IS cr_freservation.
 
        SELECT fterrain ASSIGN TO "terrains.dat"
-       ORGANIZATION IS INDEAED
+       ORGANIZATION IS INDEXED
        ACCESS MODE IS DYNAMIC
        RECORD KEY IS ft_numterrain
        ALTERNATE RECORD KEY IS ft_lieu WITH DUPLICATES
        FILE STATUS IS cr_fterrain.
 
        SELECT fstat ASSIGN TO "statistiques.dat"
-       ORGANIZATION IS INDEAED
+       ORGANIZATION IS INDEXED
        ACCESS MODE IS DYNAMIC
        RECORD KEY IS fs_cle
        ALTERNATE RECORD KEY IS fs_lieu WITH DUPLICATES
