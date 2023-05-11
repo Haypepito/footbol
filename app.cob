@@ -98,8 +98,9 @@
               77 cr_fterrain PIC 9(2).
               77 cr_fstat PIC 9(2).
               77 cr_freservation PIC 9(2).
-               
-       
+              77 Wtrouve PIC 9(1).
+              77 Wfin PIC 9.
+              
        PROCEDURE DIVISION.
                DISPLAY "Ajout d'une nouvelle compétition"
                DISPLAY "================================test"
