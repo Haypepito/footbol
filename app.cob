@@ -4,105 +4,202 @@
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
-               SELECT futilisateur ASSIGN TO "utilisateurs.dat"
-               ORGANIZATION IS INDEXED
-               ACCESS MODE IS DYNAMIC
-               RECORD KEY IS fu_numutilisateur
-               ALTERNATE RECORD KEY IS fu_nom WITH DUPLICATES
-               ALTERNATE RECORD KEY IS fu_mail WITH DUPLICATES
-               FILE STATUS IS cr_utilisateur.
+           SELECT futilisateur ASSIGN TO "utilisateurs.dat"
+           ORGANIZATION IS INDEXED
+           ACCESS MODE IS DYNAMIC
+           RECORD KEY IS fu_numutilisateur
+           ALTERNATE RECORD KEY IS fu_nom WITH DUPLICATES
+           ALTERNATE RECORD KEY IS fu_mail WITH DUPLICATES
+           FILE STATUS IS cr_futilisateur.
        
-              SELECT flieu ASSIGN TO "lieux.dat"
-              ORGANIZATION IS INDEXED
-              ACCESS MODE IS DYNAMIC
-              RECORD KEY IS fl_numlieu
-              ALTERNATE RECORD KEY IS fl_adresse WITH DUPLICATES
-              ALTERNATE RECORD KEY IS fl_gerant WITH DUPLICATES
-              FILE STATUS IS cr_flieu.
+           SELECT flieu ASSIGN TO "lieux.dat"
+           ORGANIZATION IS INDEXED
+           ACCESS MODE IS DYNAMIC
+           RECORD KEY IS fl_numlieu
+           ALTERNATE RECORD KEY IS fl_adresse WITH DUPLICATES
+           ALTERNATE RECORD KEY IS fl_gerant WITH DUPLICATES
+           FILE STATUS IS cr_flieu.
        
-              SELECT freservation ASSIGN TO "reservations.dat"
-              ORGANIZATION IS INDEXED
-              ACCESS MODE IS DYNAMIC
-              RECORD KEY IS fr_cleres
-              ALTERNATE RECORD KEY IS fr_numutilisateur WITH DUPLICATES
-              FILE STATUS IS cr_freservation.
+           SELECT freservation ASSIGN TO "reservations.dat"
+           ORGANIZATION IS INDEXED
+           ACCESS MODE IS DYNAMIC
+           RECORD KEY IS fr_cleres
+           ALTERNATE RECORD KEY IS fr_numutilisateur WITH DUPLICATES
+           FILE STATUS IS cr_freservation.
        
-              SELECT fterrain ASSIGN TO "terrains.dat"
-              ORGANIZATION IS INDEXED
-              ACCESS MODE IS DYNAMIC
-              RECORD KEY IS ft_numterrain
-              ALTERNATE RECORD KEY IS ft_lieu WITH DUPLICATES
-              FILE STATUS IS cr_fterrain.
+           SELECT fterrain ASSIGN TO "terrains.dat"
+           ORGANIZATION IS INDEXED
+           ACCESS MODE IS DYNAMIC
+           RECORD KEY IS ft_numterrain
+           ALTERNATE RECORD KEY IS ft_lieu WITH DUPLICATES
+           FILE STATUS IS cr_fterrain.
        
-              SELECT fstat ASSIGN TO "statistiques.dat"
-              ORGANIZATION IS INDEXED
-              ACCESS MODE IS DYNAMIC
-              RECORD KEY IS fs_cle
-              ALTERNATE RECORD KEY IS fs_lieu WITH DUPLICATES
-              ALTERNATE RECORD KEY IS fs_mois WITH DUPLICATES
-              FILE STATUS IS cr_fstat.
+           SELECT fstat ASSIGN TO "statistiques.dat"
+           ORGANIZATION IS INDEXED
+           ACCESS MODE IS DYNAMIC
+           RECORD KEY IS fs_cle
+           ALTERNATE RECORD KEY IS fs_lieu WITH DUPLICATES
+           ALTERNATE RECORD KEY IS fs_mois WITH DUPLICATES
+           FILE STATUS IS cr_fstat.
        
        DATA DIVISION.
        
-       
        FILE SECTION.
-       FD Futilisateur.
-          01 Tutilisateur.
-             02 fu_numutilisateur PIC 9(9).
-             02 fu_nom PIC A(30).
-             02 fu_prenom PIC A(30).
-             02 fu_mail PIC A(50).
-             02 fu_mdp PIC A(20).
-             02 fu_role PIC 9(2).
+       FD futilisateur.
+       01 tamp_futilisateur.
+          02 fu_numutilisateur PIC 9(9).
+          02 fu_nom PIC A(30).
+          02 fu_prenom PIC A(30).
+          02 fu_mail PIC A(50).
+          02 fu_mdp PIC A(20).
+          02 fu_role PIC 9(2).
        
-       FD Flieu.
-          01 Tlieu.
-             02 fl_numlieu PIC 9(9).
-             02 fl_gerant PIC 9(9).
-             02 fl_adresse PIC A(50).
-             02 fl_terrain_existant PIC 9(9).
+       FD flieu.
+       01 tamp_flieu.
+          02 fl_numlieu PIC 9(9).
+          02 fl_gerant PIC 9(9).
+          02 fl_adresse PIC A(50).
+          02 fl_terrain_existant PIC 9(2).
        
-       FD Freservation.
-          01 Treservation.
-             02 fr_cleres.
-                03 fr_numterrain PIC 9(9).
-                03 fr_heure PIC 9(2).
-                03 fr_date PIC A(10).
-             02 fr_numutilisateur PIC A(50).
-             02 fr_materiel PIC A.
+       FD freservation.
+       01 tamp_freservation.
+          02 fr_cleres.
+             03 fr_numterrain PIC 9(9).
+             03 fr_heure PIC 9(2).
+             03 fr_date PIC A(10).
+          02 fr_numutilisateur PIC A(50).
+          02 fr_materiel PIC A.
        
-       FD Fterrain.
-          01 Tterrain.
-             02 ft_numterrain PIC 9(9).
-             02 ft_lieu PIC A(50).
-             02 ft_longueur PIC 9(4).
-             02 ft_largeur PIC 9(4).
-             02 ft_type PIC A(20).
-             02 ft_prix PIC 9(5).
-             02 ft_couvert PIC A.
+       FD fterrain.
+       01 tamp_fterrain.
+          02 ft_numterrain PIC 9(9).
+          02 ft_lieu PIC A(50).
+          02 ft_longueur PIC 9(4).
+          02 ft_largeur PIC 9(4).
+          02 ft_type PIC A(20).
+          02 ft_prix PIC 9(5).
+          02 ft_couvert PIC A.
        
-       FD Fstat.
-          01 Tstat.
-             02 fs_cle.
-                03 fs_lieu PIC A(50).
-                03 fs_mois PIC 9(2).
-             02 fs_type_reservation_gazon PIC 9(9).
-             02 fs_type_reservation_synthetique PIC 9(9).
-             02 fs_type_reservation_falin PIC 9(9).
-             02 fs_materiel PIC 9(9).
-       
+       FD fstat.
+       01 tamp_fstat.
+          02 fs_cle.
+             03 fs_lieu PIC A(50).
+             03 fs_mois PIC 9(2).
+          02 fs_type_reservation_gazon PIC 9(9).
+          02 fs_type_reservation_synthetique PIC 9(9).
+          02 fs_type_reservation_falin PIC 9(9).
+          02 fs_materiel PIC 9(9).
        
        WORKING-STORAGE SECTION.
-              77 cr_utilisateur PIC 9(2).
-              77 cr_flieu PIC 9(2).
-              77 cr_fterrain PIC 9(2).
-              77 cr_fstat PIC 9(2).
-              77 cr_freservation PIC 9(2).
-              77 Wtrouve PIC 9(1).
-              77 Wfin PIC 9.
-              
+          77 cr_futilisateur PIC 9(2).
+          77 cr_flieu PIC 9(2).
+          77 cr_fterrain PIC 9(2).
+          77 cr_fstat PIC 9(2).
+          77 cr_freservation PIC 9(2).
+          77 Wtrouve PIC 9(1).
+          77 Wfin PIC 9(1).
+
        PROCEDURE DIVISION.
-               DISPLAY "Ajout d'une nouvelle compétition"
-               DISPLAY "================================test"
-              STOP RUN.
-              
+           OPEN I-O futilisateur
+           IF cr_futilisateur=35 THEN
+               OPEN OUTPUT futilisateur
+           END-IF
+           CLOSE futilisateur
+
+           OPEN I-O flieu
+           IF cr_flieu=35 THEN
+               OPEN OUTPUT flieu
+           END-IF
+           CLOSE flieu
+
+           OPEN I-O freservation
+           IF cr_freservation=35 THEN
+               OPEN OUTPUT freservation
+           END-IF
+           CLOSE freservation
+
+           OPEN I-O fterrain
+           IF cr_fterrain=35 THEN
+               OPEN OUTPUT fterrain
+           END-IF
+           CLOSE fterrain
+
+           OPEN I-O fstat
+           IF cr_fstat=35 THEN
+               OPEN OUTPUT fstat
+           END-IF
+           CLOSE fstat
+           STOP RUN.
+
+       AJOUT_LIEU.
+           DISPLAY "Entrez le numéro de lieu :"
+           ACCEPT fl_numlieu FROM CONSOLE.
+
+           READ flieu KEY IS fl_numlieu.
+           IF cr_flieu = "00" 
+               DISPLAY "Erreur : Le lieu existe déjà."
+           ELSE
+               DISPLAY "Entrez le nom du gérant :"
+               ACCEPT fl_gerant FROM CONSOLE.
+
+               DISPLAY "Entrez l'adresse :"
+               ACCEPT fl_adresse FROM CONSOLE.
+
+               DISPLAY "Entrez le nombre de terrains existants :"
+               ACCEPT fl_terrain_existant FROM CONSOLE.
+
+               MOVE fl_numlieu TO tamp_flieu.
+               MOVE fl_gerant TO tamp_flieu.
+               MOVE fl_adresse TO tamp_flieu.
+               MOVE fl_terrain_existant TO tamp_flieu.
+
+               WRITE tamp_flieu.
+               IF cr_flieu NOT = "00" 
+                   DISPLAY "Erreur lors de l'écriture du lieu."
+               ELSE 
+                   DISPLAY "Lieu ajouté avec succès."
+               END-IF.
+
+       MODIF_LIEU.
+           DISPLAY "Entrez le numéro de lieu à modifier :"
+           ACCEPT fl_numlieu FROM CONSOLE.
+
+           READ flieu KEY IS fl_numlieu.
+           IF cr_flieu NOT = "00"
+               DISPLAY "Erreur : Le lieu n'existe pas."
+           ELSE
+               DISPLAY "Entrez le nouveau nom du gérant :"
+               ACCEPT fl_gerant FROM CONSOLE.
+
+               DISPLAY "Entrez la nouvelle adresse :"
+               ACCEPT fl_adresse FROM CONSOLE.
+
+               DISPLAY "Entrez le nouveau nombre de terrains existants:"
+               ACCEPT fl_terrain_existant FROM CONSOLE.
+
+               MOVE fl_numlieu TO tamp_flieu.
+               MOVE fl_gerant                TO tamp_flieu.
+               MOVE fl_adresse TO tamp_flieu.
+               MOVE fl_terrain_existant TO tamp_flieu.
+
+               REWRITE tamp_flieu.
+               IF cr_flieu NOT = "00" 
+                   DISPLAY "Erreur lors de la modification du lieu."
+               ELSE 
+                   DISPLAY "Lieu modifié avec succès."
+               END-IF.
+
+       SUPPRIMER_LIEU.
+           DISPLAY "Entrez le numéro de lieu à supprimer :"
+           ACCEPT fl_numlieu FROM CONSOLE.
+
+           READ flieu KEY IS fl_numlieu.
+           IF cr_flieu NOT = "00"
+               DISPLAY "Erreur : Le lieu n'existe pas."
+           ELSE
+               DELETE flieu RECORD.
+               IF cr_flieu NOT = "00" 
+                   DISPLAY "Erreur lors de la suppression du lieu."
+               ELSE 
+                   DISPLAY "Lieu supprimé avec succès."
+               END-IF.
