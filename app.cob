@@ -67,7 +67,7 @@
              03 fr_numterrain PIC 9(9).
              03 fr_heure PIC 9(2).
              03 fr_date PIC A(10).
-          02 fr_numutilisateur PIC A(50).
+          02 fr_numutilisateur PIC 9(10).
           02 fr_materiel PIC A.
        
        FD fterrain.
@@ -98,6 +98,10 @@
           77 cr_freservation PIC 9(2).
           77 Wtrouve PIC 9(1).
           77 Wfin PIC 9(1).
+          01 lieu_saisi PIC A(50).
+          01 heure_saisie PIC 9(2).
+          01 date_saisie PIC A(10).
+          01 id_utilisateur PIC 9(10).
 
        PROCEDURE DIVISION.
            OPEN I-O futilisateur
@@ -129,77 +133,42 @@
                OPEN OUTPUT fstat
            END-IF
            CLOSE fstat
+           perform AJOUT_RESERVATION
            STOP RUN.
 
-       AJOUT_LIEU.
-           DISPLAY "Entrez le numéro de lieu :"
-           ACCEPT fl_numlieu FROM CONSOLE.
+       AJOUT_RESERVATION.
+       OPEN I-O freservation
 
-           READ flieu KEY IS fl_numlieu.
-           IF cr_flieu = "00" 
-               DISPLAY "Erreur : Le lieu existe déjà."
-           ELSE
-               DISPLAY "Entrez le nom du gérant :"
-               ACCEPT fl_gerant FROM CONSOLE.
+       DISPLAY "Entrez le lieu de la réservation :"
+       ACCEPT lieu_saisi FROM CONSOLE.
 
-               DISPLAY "Entrez l'adresse :"
-               ACCEPT fl_adresse FROM CONSOLE.
+       DISPLAY "Entrez l'heure de la réservation :"
+       ACCEPT heure_saisie FROM CONSOLE.
 
-               DISPLAY "Entrez le nombre de terrains existants :"
-               ACCEPT fl_terrain_existant FROM CONSOLE.
+       DISPLAY "Entrez la date de la réservation :"
+       ACCEPT date_saisie FROM CONSOLE.
 
-               MOVE fl_numlieu TO tamp_flieu.
-               MOVE fl_gerant TO tamp_flieu.
-               MOVE fl_adresse TO tamp_flieu.
-               MOVE fl_terrain_existant TO tamp_flieu.
+       DISPLAY "Entrez l'id de l'utilisateur de la réservation :"
+       ACCEPT id_utilisateur FROM CONSOLE.
 
-               WRITE tamp_flieu.
-               IF cr_flieu NOT = "00" 
-                   DISPLAY "Erreur lors de l'écriture du lieu."
-               ELSE 
-                   DISPLAY "Lieu ajouté avec succès."
-               END-IF.
+       READ freservation
+           INVALID KEY
+               MOVE lieu_saisi TO ft_lieu
+               MOVE heure_saisie TO fr_heure
+               MOVE date_saisie TO fr_date
+               MOVE id_utilisateur TO fr_numutilisateur
+               MOVE "M" TO fr_materiel
 
-       MODIF_LIEU.
-           DISPLAY "Entrez le numéro de lieu à modifier :"
-           ACCEPT fl_numlieu FROM CONSOLE.
+               WRITE tamp_freservation
+               IF cr_freservation = "00"
+                   DISPLAY "Réservation ajoutée avec succès."
+               ELSE
+                   DISPLAY "Erreur lors de l'ajout de la réservation."
+               END-IF
+           NOT INVALID KEY
+               DISPLAY "La réservation existe déjà."
+       END-READ
 
-           READ flieu KEY IS fl_numlieu.
-           IF cr_flieu NOT = "00"
-               DISPLAY "Erreur : Le lieu n'existe pas."
-           ELSE
-               DISPLAY "Entrez le nouveau nom du gérant :"
-               ACCEPT fl_gerant FROM CONSOLE.
+       CLOSE freservation.
 
-               DISPLAY "Entrez la nouvelle adresse :"
-               ACCEPT fl_adresse FROM CONSOLE.
-
-               DISPLAY "Entrez le nouveau nombre de terrains existants:"
-               ACCEPT fl_terrain_existant FROM CONSOLE.
-
-               MOVE fl_numlieu TO tamp_flieu.
-               MOVE fl_gerant                TO tamp_flieu.
-               MOVE fl_adresse TO tamp_flieu.
-               MOVE fl_terrain_existant TO tamp_flieu.
-
-               REWRITE tamp_flieu.
-               IF cr_flieu NOT = "00" 
-                   DISPLAY "Erreur lors de la modification du lieu."
-               ELSE 
-                   DISPLAY "Lieu modifié avec succès."
-               END-IF.
-
-       SUPPRIMER_LIEU.
-           DISPLAY "Entrez le numéro de lieu à supprimer :"
-           ACCEPT fl_numlieu FROM CONSOLE.
-
-           READ flieu KEY IS fl_numlieu.
-           IF cr_flieu NOT = "00"
-               DISPLAY "Erreur : Le lieu n'existe pas."
-           ELSE
-               DELETE flieu RECORD.
-               IF cr_flieu NOT = "00" 
-                   DISPLAY "Erreur lors de la suppression du lieu."
-               ELSE 
-                   DISPLAY "Lieu supprimé avec succès."
-               END-IF.
+       STOP RUN.
