@@ -102,6 +102,6 @@
        
        PROCEDURE DIVISION.
                DISPLAY "Ajout d'une nouvelle compétition"
-               DISPLAY "================================"
+               DISPLAY "================================test"
               STOP RUN.
               
