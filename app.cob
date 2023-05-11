@@ -1,4 +1,4 @@
-       IDENTIFICATION DIVISION.
+IDENTIFICATION DIVISION.
        PROGRAM-ID. footbol.
        
        ENVIRONMENT DIVISION.
@@ -100,7 +100,18 @@
               77 cr_freservation PIC 9(2).
               77 Wtrouve PIC 9(1).
               77 Wfin PIC 9(1).
-              
+              77 WstringPtr PIC 9(2).
+              77 Wpart1 PIC 9(2).
+              77 Wpart2 PIC 9(2).
+              77 WvalidatedMail PIC 9(2).
+               01 W_futilisateur.
+                02 Wnumutilisateur PIC 9(9).
+                02 Wnom PIC A(30).
+                02 Wprenom PIC A(30).
+                02 Wmail PIC A(50).
+                02 Wmdp PIC A(20).
+                02 Wrole PIC 9(2).
+
         PROCEDURE DIVISION.
                 OPEN I-O futilisateur
                 IF cr_futilisateur=35 THEN
@@ -132,9 +143,62 @@
                 END-IF
                 CLOSE fstat
 
-                PERFORM AJOUT_LIEU
-                PERFORM MODIF_LIEU
-                PERFORM SUPPRIMER_LIEU
-
+                PERFORM AJOUT_UTILISATEUR
         STOP RUN.
         
+        AJOUT_UTILISATEUR.
+
+                OPEN I-O futilisateur
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+                   DISPLAY "Numero : "
+                   ACCEPT Wnumutilisateur
+                   MOVE Wnumutilisateur TO fu_numutilisateur
+                   READ futilisateur
+                   INVALID KEY  DISPLAY " "
+                                MOVE 0 TO Wtrouve
+                   NOT INVALID KEY DISPLAY "Numéro déjà utilisé"
+                                   MOVE 1 TO Wtrouve
+                   END-READ
+           END-PERFORM
+     
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+              DISPLAY "Prenom : "
+              ACCEPT Wprenom
+              DISPLAY "Nom : "
+              ACCEPT Wnom
+              READ futilisateur NEXT
+              AT END DISPLAY " "
+              NOT AT END IF fu_prenom = Wprenom
+                            and fu_nom = Wnom
+                      THEN
+                              MOVE 1 TO Wtrouve
+                      ELSE
+                              MOVE 0 TO Wtrouve
+                      END-IF
+              END-READ
+           END-PERFORM
+
+           OPEN I-O futilisateur
+               PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+                       DISPLAY "Mail : "
+                       ACCEPT Wmail
+                       MOVE Wmail TO fu_mail
+                       READ futilisateur
+                       INVALID KEY  DISPLAY " "
+                                    MOVE 0 TO Wtrouve
+                       NOT INVALID KEY DISPLAY "Mail déjà existant"
+                                       MOVE 1 TO Wtrouve
+                       END-READ
+           END-PERFORM
+
+           DISPLAY "Rôle : "
+           ACCEPT Wrole
+       
+             DISPLAY "Mdp : "
+             ACCEPT Wmdp
+       
+             MOVE W_futilisateur to tamp_futilisateur
+             WRITE tamp_futilisateur
+             END-WRITE
+             CLOSE futilisateur.
+       
