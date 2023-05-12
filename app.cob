@@ -46,167 +46,312 @@
        
        FILE SECTION.
        FD futilisateur.
-       01 tamp_futilisateur.
-          02 fu_numutilisateur PIC 9(9).
-          02 fu_nom PIC A(30).
-          02 fu_prenom PIC A(30).
-          02 fu_mail PIC A(50).
-          02 fu_mdp PIC A(20).
-          02 fu_role PIC 9(2).
+          01 tamp_futilisateur.
+             02 fu_numutilisateur PIC 9(9).
+             02 fu_nom PIC A(30).
+             02 fu_prenom PIC A(30).
+             02 fu_mail PIC A(50).
+             02 fu_mdp PIC 9(20).
+             02 fu_role PIC 9(2).
        
        FD flieu.
-       01 tamp_flieu.
-          02 fl_numlieu PIC 9(9).
-          02 fl_gerant PIC 9(9).
-          02 fl_adresse PIC A(50).
-          02 fl_terrain_existant PIC 9(2).
+          01 tamp_flieu.
+             02 fl_numlieu PIC 9(9).
+             02 fl_gerant PIC 9(9).
+             02 fl_adresse PIC A(50).
+             02 fl_terrain_existant PIC 9(9).
        
        FD freservation.
-       01 tamp_freservation.
-          02 fr_cleres.
-             03 fr_numterrain PIC 9(9).
-             03 fr_heure PIC 9(2).
-             03 fr_date PIC A(10).
-          02 fr_numutilisateur PIC A(50).
-          02 fr_materiel PIC A.
+          01 tamp_freservation.
+             02 fr_cleres.
+                03 fr_numterrain PIC 9(9).
+                03 fr_heure PIC 9(2).
+                03 fr_date PIC A(10).
+             02 fr_numutilisateur PIC 9(10).
+             02 fr_materiel PIC A.
        
        FD fterrain.
-       01 tamp_fterrain.
-          02 ft_numterrain PIC 9(9).
-          02 ft_lieu PIC A(50).
-          02 ft_longueur PIC 9(4).
-          02 ft_largeur PIC 9(4).
-          02 ft_type PIC A(20).
-          02 ft_prix PIC 9(5).
-          02 ft_couvert PIC A.
+          01 tamp_fterrain.
+             02 ft_numterrain PIC 9(9).
+             02 ft_lieu PIC A(50).
+             02 ft_longueur PIC 9(4).
+             02 ft_largeur PIC 9(4).
+             02 ft_type PIC A(20).
+             02 ft_prix PIC 9(5).
+             02 ft_couvert PIC A.
        
        FD fstat.
-       01 tamp_fstat.
-          02 fs_cle.
-             03 fs_lieu PIC A(50).
-             03 fs_mois PIC 9(2).
-          02 fs_type_reservation_gazon PIC 9(9).
-          02 fs_type_reservation_synthetique PIC 9(9).
-          02 fs_type_reservation_falin PIC 9(9).
-          02 fs_materiel PIC 9(9).
+          01 tamp_fstat.
+             02 fs_cle.
+                03 fs_lieu PIC A(50).
+                03 fs_mois PIC 9(2).
+             02 fs_type_reservation_gazon PIC 9(9).
+             02 fs_type_reservation_synthetique PIC 9(9).
+             02 fs_type_reservation_falin PIC 9(9).
+             02 fs_materiel PIC 9(9).
        
        WORKING-STORAGE SECTION.
-          77 cr_futilisateur PIC 9(2).
-          77 cr_flieu PIC 9(2).
-          77 cr_fterrain PIC 9(2).
-          77 cr_fstat PIC 9(2).
-          77 cr_freservation PIC 9(2).
-          77 Wtrouve PIC 9(1).
-          77 Wfin PIC 9(1).
 
-       PROCEDURE DIVISION.
+              77 cr_futilisateur PIC 9(2).
+              77 cr_flieu PIC 9(2).
+              77 cr_fterrain PIC 9(2).
+              77 cr_fstat PIC 9(2).
+              77 cr_freservation PIC 9(2).
+              77 Wtrouve PIC 9(1).
+              77 Wfin PIC 9(1).
+              77 Wmail_valide PIC 9(1).
+              77 Wreponse PIC A(1).
+              77 Wancienrole PIC 9(2).
+              01 lieu_saisi PIC A(50).
+              01 heure_saisie PIC 9(2).
+              01 date_saisie PIC A(10).
+              01 id_utilisateur PIC 9(10).
+               01 W_futilisateur.
+                02 Wnumutilisateur PIC 9(9).
+                02 Wnom PIC A(30).
+                02 Wprenom PIC A(30).
+                02 Wmail PIC A(50).
+                02 Wmdp PIC 9(20).
+                02 Wrole PIC 9(2).
+
+        PROCEDURE DIVISION.
+                OPEN I-O futilisateur
+                IF cr_futilisateur=35 THEN
+                        OPEN OUTPUT futilisateur
+                END-IF
+                CLOSE futilisateur
+
+                OPEN I-O flieu
+                IF cr_flieu=35 THEN
+                        OPEN OUTPUT flieu
+                END-IF
+                CLOSE flieu
+
+                OPEN I-O freservation
+                IF cr_freservation=35 THEN
+                        OPEN OUTPUT freservation
+                END-IF
+                CLOSE freservation
+
+                OPEN I-O fterrain
+                IF cr_fterrain=35 THEN
+                        OPEN OUTPUT fterrain
+                END-IF
+                CLOSE fterrain
+
+                OPEN I-O fstat
+                IF cr_fstat=35 THEN
+                        OPEN OUTPUT fstat
+                END-IF
+                CLOSE fstat
+              
+        STOP RUN.
+        
+        AJOUT_UTILISATEUR.
            OPEN I-O futilisateur
-           IF cr_futilisateur=35 THEN
-               OPEN OUTPUT futilisateur
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+                   DISPLAY "Numero : "
+                   ACCEPT Wnumutilisateur
+                   MOVE Wnumutilisateur TO fu_numutilisateur
+                   READ futilisateur
+                   INVALID KEY  DISPLAY " "
+                                MOVE 0 TO Wtrouve
+                   NOT INVALID KEY DISPLAY "Numéro déjà utilisé"
+                                   MOVE 1 TO Wtrouve
+                   END-READ
+           END-PERFORM
+     
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+               DISPLAY "Prenom : "
+               ACCEPT Wprenom
+               DISPLAY "Nom : "
+               ACCEPT Wnom
+               READ futilisateur NEXT
+               AT END DISPLAY " "
+               NOT AT END IF fu_prenom = Wprenom
+                             and fu_nom = Wnom
+               THEN
+                       MOVE 1 TO Wtrouve
+               ELSE
+                       MOVE 0 TO Wtrouve
+               END-IF
+              END-READ
+           END-PERFORM
+
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+               DISPLAY "Mail : "
+               ACCEPT Wmail
+               PERFORM WITH TEST AFTER UNTIL Wmail_valide = 1
+                   MOVE 0 TO Wtrouve
+                   READ futilisateur
+                   AT END
+                       MOVE 1 TO Wmail_valide
+                   NOT AT END
+                       IF fu_mail = Wmail
+                           DISPLAY "Mail déjà existant"
+                           MOVE 1 TO Wtrouve
+                       END-IF
+                   END-READ
+               END-PERFORM
+           END-PERFORM
+
+    
+           DISPLAY "Rôle : "
+           ACCEPT Wrole
+       
+           DISPLAY "Mdp : "
+           ACCEPT Wmdp
+       
+           MOVE W_futilisateur to tamp_futilisateur
+           WRITE tamp_futilisateur
+           END-WRITE
+           CLOSE futilisateur.
+
+       MODIF-UTILISATEUR.
+           OPEN I-O futilisateur
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+               DISPLAY "Numéro de l'utilisateur à modifier : "
+               ACCEPT Wnumutilisateur
+               MOVE Wnumutilisateur TO fu_numutilisateur
+               READ futilisateur
+               INVALID KEY  DISPLAY "Utilisateur introuvable"
+                            MOVE 0 TO Wtrouve
+               NOT INVALID KEY MOVE 1 TO Wtrouve
+               END-READ
+           END-PERFORM
+    
+           IF Wtrouve = 1
+               MOVE fu_role TO Wrole
+               
+               DISPLAY "Nouveau nom : ( actuel " fu_nom" )"
+               ACCEPT Wnom
+               DISPLAY "Nouveau prénom : ( actuel " fu_prenom" )"
+               ACCEPT Wprenom
+               DISPLAY "Nouveau mail : ( actuel " fu_mail" )"
+               ACCEPT Wmail
+               DISPLAY "Nouveau mdp : ( actuel " fu_mdp" )"
+               ACCEPT Wmdp
+
+               MOVE Wnom TO fu_nom
+               Move Wprenom TO fu_prenom
+               MOVE Wmail TO fu_mail
+               MOVE Wmdp TO fu_mdp
+               MOVE Wrole TO fu_role
+    
+               REWRITE tamp_futilisateur FROM W_futilisateur
+               DISPLAY "Utilisateur modifié avec succès"
            END-IF
-           CLOSE futilisateur
+           CLOSE futilisateur.
 
-           OPEN I-O flieu
-           IF cr_flieu=35 THEN
-               OPEN OUTPUT flieu
+       MODIF-DROIT.
+           OPEN I-O futilisateur
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+               DISPLAY "Numéro de l'utilisateur à modifier : "
+               ACCEPT Wnumutilisateur
+               MOVE Wnumutilisateur TO fu_numutilisateur
+               READ futilisateur
+               INVALID KEY  DISPLAY "Utilisateur introuvable"
+                            MOVE 0 TO Wtrouve
+               NOT INVALID KEY MOVE 1 TO Wtrouve
+               END-READ
+           END-PERFORM
+    
+           IF Wtrouve = 1
+               MOVE fu_mdp TO Wmdp
+               MOVE fu_nom TO Wnom
+               MOVE fu_prenom TO Wprenom
+               MOVE fu_mail TO Wmail
+               
+               DISPLAY "Nouveau rôle : ( actuel " fu_role" )"
+               ACCEPT Wrole
+
+               MOVE Wnom TO fu_nom
+               Move Wprenom TO fu_prenom
+               MOVE Wmail TO fu_mail
+               MOVE Wmdp TO fu_mdp
+               MOVE Wrole TO fu_role
+    
+               REWRITE tamp_futilisateur FROM W_futilisateur
+               DISPLAY "Rôle modifié avec succès"
            END-IF
-           CLOSE flieu
+           CLOSE futilisateur.
+       
+       SUPPRIMER_UTILISATEUR.
+           open I-O futilisateur
+       display "Suppression d'un utilisateur"
+       accept Wnom
+       accept Wprenom
+       perform with test after until Wtrouve = 1
+           read futilisateur
+               at end move 1 to Wtrouve
+               not at end
+                   if fu_nom = Wnom and fu_prenom = Wprenom
+                       display "Utilisateur trouvé"
+           display fu_nom " " fu_prenom " " fu_mail" "fu_role" "fu_mdp
+           display "Confirmer suppression utilisateur ? (O/N)"
+                       accept Wreponse
+                       if Wreponse = "O" or Wreponse = "o"
+                           delete futilisateur
+                           display "Utilisateur supprimé"
+                       else
+                           display "Suppression annulée"
+                       end-if
+                       move 1 to Wtrouve
+                   end-if
+           end-read
+       end-perform
+       close futilisateur.
+      
+        AFFICHAGE_UTILISATEUR.
+            OPEN INPUT futilisateur
+            MOVE 1 TO Wfin
+            PERFORM WITH TEST AFTER UNTIL Wfin=0
+                    READ futilisateur
+                    AT END MOVE 0 TO Wfin
+                    NOT AT END
+                       DISPLAY "Numéro : ["fu_numutilisateur"]"
+                       DISPLAY "Prénom : [" fu_prenom"]"
+                       DISPLAY "Nom : ["fu_nom "]"
+                       DISPLAY "Mail : ["fu_mail "]"
+                       DISPLAY "Role : ["fu_role "]"
+                       DISPLAY "Mdp : ["fu_mdp "]"
+                       DISPLAY "________________"
+                    END-READ
+            END-PERFORM
+            CLOSE futilisateur.
 
-           OPEN I-O freservation
-           IF cr_freservation=35 THEN
-               OPEN OUTPUT freservation
-           END-IF
-           CLOSE freservation
+       AJOUT_RESERVATION.
+       OPEN I-O freservation
 
-           OPEN I-O fterrain
-           IF cr_fterrain=35 THEN
-               OPEN OUTPUT fterrain
-           END-IF
-           CLOSE fterrain
+       DISPLAY "Entrez le lieu de la réservation :"
+       ACCEPT lieu_saisi FROM CONSOLE.
 
-           OPEN I-O fstat
-           IF cr_fstat=35 THEN
-               OPEN OUTPUT fstat
-           END-IF
-           CLOSE fstat
+       DISPLAY "Entrez l'heure de la réservation :"
+       ACCEPT heure_saisie FROM CONSOLE.
 
-           PERFORM AJOUT_LIEU
-           PERFORM MODIF_LIEU
-           PERFORM SUPPRIMER_LIEU
+       DISPLAY "Entrez la date de la réservation :"
+       ACCEPT date_saisie FROM CONSOLE.
 
-           STOP RUN.
+       DISPLAY "Entrez l'id de l'utilisateur de la réservation :"
+       ACCEPT id_utilisateur FROM CONSOLE.
 
-       AJOUT_LIEU.
-           DISPLAY "Entrez le numéro de lieu :"
-           ACCEPT fl_numlieu FROM CONSOLE.
+       READ freservation
+           INVALID KEY
+               MOVE lieu_saisi TO ft_lieu
+               MOVE heure_saisie TO fr_heure
+               MOVE date_saisie TO fr_date
+               MOVE id_utilisateur TO fr_numutilisateur
+               MOVE "M" TO fr_materiel
 
-           READ flieu KEY IS fl_numlieu.
-           IF cr_flieu = "00" 
-               DISPLAY "Erreur : Le lieu existe déjà."
-           ELSE
-               DISPLAY "Entrez le nom du gérant :"
-               ACCEPT fl_gerant FROM CONSOLE.
+               WRITE tamp_freservation
+               IF cr_freservation = "00"
+                   DISPLAY "Réservation ajoutée avec succès."
+               ELSE
+                   DISPLAY "Erreur lors de l'ajout de la réservation."
+               END-IF
+           NOT INVALID KEY
+               DISPLAY "La réservation existe déjà."
+       END-READ
 
-               DISPLAY "Entrez l'adresse :"
-               ACCEPT fl_adresse FROM CONSOLE.
-
-               DISPLAY "Entrez le nombre de terrains existants :"
-               ACCEPT fl_terrain_existant FROM CONSOLE.
-
-               MOVE fl_numlieu TO tamp_flieu.
-               MOVE fl_gerant TO tamp_flieu.
-               MOVE fl_adresse TO tamp_flieu.
-               MOVE fl_terrain_existant TO tamp_flieu.
-
-               WRITE tamp_flieu.
-               IF cr_flieu NOT = "00" 
-                   DISPLAY "Erreur lors de l'écriture du lieu."
-               ELSE 
-                   DISPLAY "Lieu ajouté avec succès."
-               END-IF.
-
-       MODIF_LIEU.
-           DISPLAY "Entrez le numéro de lieu à modifier :"
-           ACCEPT fl_numlieu FROM CONSOLE.
-
-           READ flieu KEY IS fl_numlieu.
-           IF cr_flieu NOT = "00"
-               DISPLAY "Erreur : Le lieu n'existe pas."
-           ELSE
-               DISPLAY "Entrez le nouveau nom du gérant :"
-               ACCEPT fl_gerant FROM CONSOLE.
-
-               DISPLAY "Entrez la nouvelle adresse :"
-               ACCEPT fl_adresse FROM CONSOLE.
-
-               DISPLAY "Entrez le nouveau nombre de terrains existants:"
-               ACCEPT fl_terrain_existant FROM CONSOLE.
-
-               MOVE fl_numlieu TO tamp_flieu.
-               MOVE fl_gerant                TO tamp_flieu.
-               MOVE fl_adresse TO tamp_flieu.
-               MOVE fl_terrain_existant TO tamp_flieu.
-
-               REWRITE tamp_flieu.
-               IF cr_flieu NOT = "00" 
-                   DISPLAY "Erreur lors de la modification du lieu."
-               ELSE 
-                   DISPLAY "Lieu modifié avec succès."
-               END-IF.
-
-       SUPPRIMER_LIEU.
-           DISPLAY "Entrez le numéro de lieu à supprimer :"
-           ACCEPT fl_numlieu FROM CONSOLE.
-
-           READ flieu KEY IS fl_numlieu.
-           IF cr_flieu NOT = "00"
-               DISPLAY "Erreur : Le lieu n'existe pas."
-           ELSE
-               DELETE flieu RECORD.
-               IF cr_flieu NOT = "00" 
-                   DISPLAY "Erreur lors de la suppression du lieu."
-               ELSE 
-                   DISPLAY "Lieu supprimé avec succès."
-               END-IF.
-
-
+       CLOSE freservation.
+       
