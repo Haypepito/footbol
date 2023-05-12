@@ -4,45 +4,46 @@
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
-           SELECT futilisateur ASSIGN TO "utilisateurs.dat"
-           ORGANIZATION IS INDEXED
-           ACCESS MODE IS DYNAMIC
-           RECORD KEY IS fu_numutilisateur
-           ALTERNATE RECORD KEY IS fu_nom WITH DUPLICATES
-           ALTERNATE RECORD KEY IS fu_mail WITH DUPLICATES
-           FILE STATUS IS cr_futilisateur.
+               SELECT futilisateur ASSIGN TO "utilisateurs.dat"
+               ORGANIZATION IS INDEXED
+               ACCESS MODE IS DYNAMIC
+               RECORD KEY IS fu_numutilisateur
+               ALTERNATE RECORD KEY IS fu_nom WITH DUPLICATES
+               ALTERNATE RECORD KEY IS fu_mail WITH DUPLICATES
+               FILE STATUS IS cr_futilisateur.
        
-           SELECT flieu ASSIGN TO "lieux.dat"
-           ORGANIZATION IS INDEXED
-           ACCESS MODE IS DYNAMIC
-           RECORD KEY IS fl_numlieu
-           ALTERNATE RECORD KEY IS fl_adresse WITH DUPLICATES
-           ALTERNATE RECORD KEY IS fl_gerant WITH DUPLICATES
-           FILE STATUS IS cr_flieu.
+              SELECT flieu ASSIGN TO "lieux.dat"
+              ORGANIZATION IS INDEXED
+              ACCESS MODE IS DYNAMIC
+              RECORD KEY IS fl_numlieu
+              ALTERNATE RECORD KEY IS fl_adresse WITH DUPLICATES
+              ALTERNATE RECORD KEY IS fl_gerant WITH DUPLICATES
+              FILE STATUS IS cr_flieu.
        
-           SELECT freservation ASSIGN TO "reservations.dat"
-           ORGANIZATION IS INDEXED
-           ACCESS MODE IS DYNAMIC
-           RECORD KEY IS fr_cleres
-           ALTERNATE RECORD KEY IS fr_numutilisateur WITH DUPLICATES
-           FILE STATUS IS cr_freservation.
+              SELECT freservation ASSIGN TO "reservations.dat"
+              ORGANIZATION IS INDEXED
+              ACCESS MODE IS DYNAMIC
+              RECORD KEY IS fr_cleres
+              ALTERNATE RECORD KEY IS fr_numutilisateur WITH DUPLICATES
+              FILE STATUS IS cr_freservation.
        
-           SELECT fterrain ASSIGN TO "terrains.dat"
-           ORGANIZATION IS INDEXED
-           ACCESS MODE IS DYNAMIC
-           RECORD KEY IS ft_numterrain
-           ALTERNATE RECORD KEY IS ft_lieu WITH DUPLICATES
-           FILE STATUS IS cr_fterrain.
+              SELECT fterrain ASSIGN TO "terrains.dat"
+              ORGANIZATION IS INDEXED
+              ACCESS MODE IS DYNAMIC
+              RECORD KEY IS ft_numterrain
+              ALTERNATE RECORD KEY IS ft_lieu WITH DUPLICATES
+              FILE STATUS IS cr_fterrain.
        
-           SELECT fstat ASSIGN TO "statistiques.dat"
-           ORGANIZATION IS INDEXED
-           ACCESS MODE IS DYNAMIC
-           RECORD KEY IS fs_cle
-           ALTERNATE RECORD KEY IS fs_lieu WITH DUPLICATES
-           ALTERNATE RECORD KEY IS fs_mois WITH DUPLICATES
-           FILE STATUS IS cr_fstat.
+              SELECT fstat ASSIGN TO "statistiques.dat"
+              ORGANIZATION IS INDEXED
+              ACCESS MODE IS DYNAMIC
+              RECORD KEY IS fs_cle
+              ALTERNATE RECORD KEY IS fs_lieu WITH DUPLICATES
+              ALTERNATE RECORD KEY IS fs_mois WITH DUPLICATES
+              FILE STATUS IS cr_fstat.
        
        DATA DIVISION.
+       
        
        FILE SECTION.
        FD futilisateur.
@@ -67,7 +68,7 @@
                 03 fr_numterrain PIC 9(9).
                 03 fr_heure PIC 9(2).
                 03 fr_date PIC A(10).
-             02 fr_numutilisateur PIC A(10).
+             02 fr_numutilisateur PIC A(50).
              02 fr_materiel PIC A.
        
        FD fterrain.
@@ -90,8 +91,8 @@
              02 fs_type_reservation_falin PIC 9(9).
              02 fs_materiel PIC 9(9).
        
+       
        WORKING-STORAGE SECTION.
-
               77 cr_futilisateur PIC 9(2).
               77 cr_flieu PIC 9(2).
               77 cr_fterrain PIC 9(2).
@@ -102,10 +103,6 @@
               77 Wmail_valide PIC 9(1).
               77 Wreponse PIC A(1).
               77 Wancienrole PIC 9(2).
-               01 lieu_saisi PIC A(50).
-               01 heure_saisie PIC 9(2).
-               01 date_saisie PIC A(10).
-               01 id_utilisateur PIC 9(10).
                01 W_futilisateur.
                 02 Wnumutilisateur PIC 9(9).
                 02 Wnom PIC A(30).
@@ -320,41 +317,4 @@
                     END-READ
             END-PERFORM
             CLOSE futilisateur.
-
-       AJOUT_RESERVATION.
-       OPEN I-O freservation
-
-       DISPLAY "Entrez le lieu de la réservation :"
-       ACCEPT lieu_saisi FROM CONSOLE.
-
-       DISPLAY "Entrez l'heure de la réservation :"
-       ACCEPT heure_saisie FROM CONSOLE.
-
-       DISPLAY "Entrez la date de la réservation :"
-       ACCEPT date_saisie FROM CONSOLE.
-
-       DISPLAY "Entrez l'id de l'utilisateur de la réservation :"
-       ACCEPT id_utilisateur FROM CONSOLE.
-
-       READ freservation
-           INVALID KEY
-               MOVE lieu_saisi TO ft_lieu
-               MOVE heure_saisie TO fr_heure
-               MOVE date_saisie TO fr_date
-               MOVE id_utilisateur TO fr_numutilisateur
-               MOVE "M" TO fr_materiel
-
-               WRITE tamp_freservation
-               IF cr_freservation = "00"
-                   DISPLAY "Réservation ajoutée avec succès."
-               ELSE
-                   DISPLAY "Erreur lors de l'ajout de la réservation."
-               END-IF
-           NOT INVALID KEY
-               DISPLAY "La réservation existe déjà."
-       END-READ
-
-       CLOSE freservation.
-
-       STOP RUN.
        
