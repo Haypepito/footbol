@@ -187,8 +187,22 @@
               END-READ
            END-PERFORM
 
-           DISPLAY "Mail : "
-           ACCEPT Wmail
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+               DISPLAY "Mail : "
+               ACCEPT Wmail
+               PERFORM WITH TEST AFTER UNTIL Wmail_valide = 1
+                   MOVE 0 TO Wtrouve
+                   READ futilisateur
+                   AT END
+                       MOVE 1 TO Wmail_valide
+                   NOT AT END
+                       IF fu_mail = Wmail
+                           DISPLAY "Mail déjà existant"
+                           MOVE 1 TO Wtrouve
+                       END-IF
+                   END-READ
+               END-PERFORM
+           END-PERFORM
     
            DISPLAY "Rôle : "
            ACCEPT Wrole
