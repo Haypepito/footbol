@@ -1,4 +1,4 @@
-IDENTIFICATION DIVISION.
+       IDENTIFICATION DIVISION.
        PROGRAM-ID. footbol.
        
        ENVIRONMENT DIVISION.
@@ -100,10 +100,7 @@ IDENTIFICATION DIVISION.
               77 cr_freservation PIC 9(2).
               77 Wtrouve PIC 9(1).
               77 Wfin PIC 9(1).
-              77 WstringPtr PIC 9(2).
-              77 Wpart1 PIC 9(2).
-              77 Wpart2 PIC 9(2).
-              77 WvalidatedMail PIC 9(2).
+              77 Wmail_valide PIC 9(1).
                01 W_futilisateur.
                 02 Wnumutilisateur PIC 9(9).
                 02 Wnom PIC A(30).
@@ -143,7 +140,7 @@ IDENTIFICATION DIVISION.
                 END-IF
                 CLOSE fstat
 
-                PERFORM AJOUT_UTILISATEUR
+                PERFORM  MODIF-UTILISATEUR
         STOP RUN.
         
         AJOUT_UTILISATEUR.
@@ -162,43 +159,135 @@ IDENTIFICATION DIVISION.
            END-PERFORM
      
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
-              DISPLAY "Prenom : "
-              ACCEPT Wprenom
-              DISPLAY "Nom : "
-              ACCEPT Wnom
-              READ futilisateur NEXT
-              AT END DISPLAY " "
-              NOT AT END IF fu_prenom = Wprenom
-                            and fu_nom = Wnom
-                      THEN
-                              MOVE 1 TO Wtrouve
-                      ELSE
-                              MOVE 0 TO Wtrouve
-                      END-IF
+               DISPLAY "Prenom : "
+               ACCEPT Wprenom
+               DISPLAY "Nom : "
+               ACCEPT Wnom
+               READ futilisateur NEXT
+               AT END DISPLAY " "
+               NOT AT END IF fu_prenom = Wprenom
+                             and fu_nom = Wnom
+               THEN
+                       MOVE 1 TO Wtrouve
+               ELSE
+                       MOVE 0 TO Wtrouve
+               END-IF
               END-READ
            END-PERFORM
 
-           OPEN I-O futilisateur
-               PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
-                       DISPLAY "Mail : "
-                       ACCEPT Wmail
-                       MOVE Wmail TO fu_mail
-                       READ futilisateur
-                       INVALID KEY  DISPLAY " "
-                                    MOVE 0 TO Wtrouve
-                       NOT INVALID KEY DISPLAY "Mail déjà existant"
-                                       MOVE 1 TO Wtrouve
-                       END-READ
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+               DISPLAY "Mail : "
+               ACCEPT Wmail
+               PERFORM WITH TEST AFTER UNTIL Wmail_valide = 1
+                   MOVE 0 TO Wtrouve
+                   READ futilisateur
+                   AT END
+                       MOVE 1 TO Wmail_valide
+                   NOT AT END
+                       IF fu_mail = Wmail
+                           DISPLAY "Mail déjà existant"
+                           MOVE 1 TO Wtrouve
+                       END-IF
+                   END-READ
+               END-PERFORM
            END-PERFORM
 
+    
            DISPLAY "Rôle : "
            ACCEPT Wrole
        
-             DISPLAY "Mdp : "
-             ACCEPT Wmdp
+           DISPLAY "Mdp : "
+           ACCEPT Wmdp
        
-             MOVE W_futilisateur to tamp_futilisateur
-             WRITE tamp_futilisateur
-             END-WRITE
-             CLOSE futilisateur.
+           MOVE W_futilisateur to tamp_futilisateur
+           WRITE tamp_futilisateur
+           END-WRITE
+           CLOSE futilisateur.
+
+       MODIF-UTILISATEUR.
+           OPEN I-O futilisateur
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+               DISPLAY "Numéro de l'utilisateur à modifier : "
+               ACCEPT Wnumutilisateur
+               MOVE Wnumutilisateur TO fu_numutilisateur
+               READ futilisateur
+               INVALID KEY  DISPLAY "Utilisateur introuvable"
+                            MOVE 0 TO Wtrouve
+               NOT INVALID KEY MOVE 1 TO Wtrouve
+               END-READ
+           END-PERFORM
+    
+           IF Wtrouve = 1
+               DISPLAY "Nouveau prénom (actuel : " fu_prenom ") : "
+               ACCEPT Wprenom
+               DISPLAY "Nouveau nom (actuel : " fu_nom ") : "
+               ACCEPT Wnom
+               DISPLAY "Nouveau mail (actuel : " fu_mail ") : "
+               ACCEPT Wmail
+               DISPLAY "Nouveau rôle (actuel : " fu_role ") : "
+               ACCEPT Wrole
+               DISPLAY "Nouveau mot de passe (actuel : " fu_mdp ") : "
+               ACCEPT Wmdp
+    
+               MOVE Wprenom TO fu_prenom
+               MOVE Wnom TO fu_nom
+               MOVE Wmail TO fu_mail
+               MOVE Wrole TO fu_role
+               MOVE Wmdp TO fu_mdp
+    
+               REWRITE tamp_futilisateur FROM W_futilisateur
+               DISPLAY "Utilisateur modifié avec succès"
+           END-IF
+           CLOSE futilisateur
+       STOP RUN.
+    
+       TEST_UTI.
+           DISPLAY "Modification d'un utilisateur"
+           DISPLAY "Numero : "
+           ACCEPT Wnumutilisateur
+    
+           OPEN I-O futilisateur
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+            READ futilisateur
+                AT END DISPLAY "Numéro d'utilisateur introuvable"
+            NOT AT END IF fu_numutilisateur = Wnumutilisateur
+                DISPLAY "Prenom : " fu_prenom
+                ACCEPT Wprenom
+                DISPLAY "Nom : " fu_nom
+                ACCEPT Wnom
+                DISPLAY "Mail : " fu_mail
+                ACCEPT Wmail
+                PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+                    READ futilisateur
+                        AT END MOVE 0 TO Wtrouve
+                    NOT AT END IF fu_mail = Wmail 
+                    MOVE fu_numutilisateur TO Wnumutilisateur
+                        DISPLAY "Mail déjà existant"
+                        MOVE 1 TO Wtrouve
+                    ELSE
+                        MOVE 0 TO Wtrouve
+                    END-IF
+                END-PERFORM
+                DISPLAY "Rôle : " fu_role
+                ACCEPT Wrole
+                DISPLAY "Mdp : " fu_mdp
+                ACCEPT Wmdp
+    
+                IF Wtrouve = 0
+                    MOVE Wnumutilisateur TO fu_numutilisateur
+                    MOVE Wprenom TO fu_prenom
+                    MOVE Wnom TO fu_nom
+                    MOVE Wmail TO fu_mail
+                    MOVE Wrole TO fu_role
+                    MOVE Wmdp TO fu_mdp
+    
+                    WRITE tamp_futilisateur
+                END-IF
+            ELSE
+                WRITE tamp_futilisateur
+            END-IF
+           END-PERFORM
+    
+           CLOSE futilisateur.
+       STOP RUN.
        
