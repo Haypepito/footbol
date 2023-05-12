@@ -52,7 +52,7 @@
              02 fu_nom PIC A(30).
              02 fu_prenom PIC A(30).
              02 fu_mail PIC A(50).
-             02 fu_mdp PIC A(20).
+             02 fu_mdp PIC 9(20).
              02 fu_role PIC 9(2).
        
        FD flieu.
@@ -102,12 +102,13 @@
               77 Wfin PIC 9(1).
               77 Wmail_valide PIC 9(1).
               77 Wreponse PIC A(1).
+              77 Wancienrole PIC 9(2).
                01 W_futilisateur.
                 02 Wnumutilisateur PIC 9(9).
                 02 Wnom PIC A(30).
                 02 Wprenom PIC A(30).
                 02 Wmail PIC A(50).
-                02 Wmdp PIC A(20).
+                02 Wmdp PIC 9(20).
                 02 Wrole PIC 9(2).
 
         PROCEDURE DIVISION.
@@ -140,14 +141,12 @@
                         OPEN OUTPUT fstat
                 END-IF
                 CLOSE fstat
-
-                PERFORM SUPPRIMER_UTILISATEUR.
                 PERFORM AFFICHAGE_UTILISATEUR.
+                
         STOP RUN.
         
         AJOUT_UTILISATEUR.
-
-                OPEN I-O futilisateur
+           OPEN I-O futilisateur
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
                    DISPLAY "Numero : "
                    ACCEPT Wnumutilisateur
@@ -220,25 +219,58 @@
            END-PERFORM
     
            IF Wtrouve = 1
-               DISPLAY "Nouveau prénom (actuel : " fu_prenom ") : "
-               ACCEPT Wprenom
-               DISPLAY "Nouveau nom (actuel : " fu_nom ") : "
+               MOVE fu_role TO Wrole
+               
+               DISPLAY "Nouveau nom : ( actuel " fu_nom" )"
                ACCEPT Wnom
-               DISPLAY "Nouveau mail (actuel : " fu_mail ") : "
+               DISPLAY "Nouveau prénom : ( actuel " fu_prenom" )"
+               ACCEPT Wprenom
+               DISPLAY "Nouveau mail : ( actuel " fu_mail" )"
                ACCEPT Wmail
-               DISPLAY "Nouveau rôle (actuel : " fu_role ") : "
-               ACCEPT Wrole
-               DISPLAY "Nouveau mot de passe (actuel : " fu_mdp ") : "
+               DISPLAY "Nouveau mdp : ( actuel " fu_mdp" )"
                ACCEPT Wmdp
-    
-               MOVE Wprenom TO fu_prenom
+
                MOVE Wnom TO fu_nom
+               Move Wprenom TO fu_prenom
                MOVE Wmail TO fu_mail
-               MOVE Wrole TO fu_role
                MOVE Wmdp TO fu_mdp
+               MOVE Wrole TO fu_role
     
                REWRITE tamp_futilisateur FROM W_futilisateur
                DISPLAY "Utilisateur modifié avec succès"
+           END-IF
+           CLOSE futilisateur.
+
+       MODIF-DROIT.
+           OPEN I-O futilisateur
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+               DISPLAY "Numéro de l'utilisateur à modifier : "
+               ACCEPT Wnumutilisateur
+               MOVE Wnumutilisateur TO fu_numutilisateur
+               READ futilisateur
+               INVALID KEY  DISPLAY "Utilisateur introuvable"
+                            MOVE 0 TO Wtrouve
+               NOT INVALID KEY MOVE 1 TO Wtrouve
+               END-READ
+           END-PERFORM
+    
+           IF Wtrouve = 1
+               MOVE fu_mdp TO Wmdp
+               MOVE fu_nom TO Wnom
+               MOVE fu_prenom TO Wprenom
+               MOVE fu_mail TO Wmail
+               
+               DISPLAY "Nouveau rôle : ( actuel " fu_role" )"
+               ACCEPT Wrole
+
+               MOVE Wnom TO fu_nom
+               Move Wprenom TO fu_prenom
+               MOVE Wmail TO fu_mail
+               MOVE Wmdp TO fu_mdp
+               MOVE Wrole TO fu_role
+    
+               REWRITE tamp_futilisateur FROM W_futilisateur
+               DISPLAY "Rôle modifié avec succès"
            END-IF
            CLOSE futilisateur.
        
@@ -286,4 +318,3 @@
             END-PERFORM
             CLOSE futilisateur.
        
-       stop run.
