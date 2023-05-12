@@ -101,6 +101,7 @@
               77 Wtrouve PIC 9(1).
               77 Wfin PIC 9(1).
               77 Wmail_valide PIC 9(1).
+              77 Wreponse PIC A(1).
                01 W_futilisateur.
                 02 Wnumutilisateur PIC 9(9).
                 02 Wnom PIC A(30).
@@ -140,7 +141,8 @@
                 END-IF
                 CLOSE fstat
 
-                PERFORM  MODIF-UTILISATEUR
+                PERFORM SUPPRIMER_UTILISATEUR.
+                PERFORM AFFICHAGE_UTILISATEUR.
         STOP RUN.
         
         AJOUT_UTILISATEUR.
@@ -238,56 +240,50 @@
                REWRITE tamp_futilisateur FROM W_futilisateur
                DISPLAY "Utilisateur modifié avec succès"
            END-IF
-           CLOSE futilisateur
-       STOP RUN.
-    
-       TEST_UTI.
-           DISPLAY "Modification d'un utilisateur"
-           DISPLAY "Numero : "
-           ACCEPT Wnumutilisateur
-    
-           OPEN I-O futilisateur
-           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
-            READ futilisateur
-                AT END DISPLAY "Numéro d'utilisateur introuvable"
-            NOT AT END IF fu_numutilisateur = Wnumutilisateur
-                DISPLAY "Prenom : " fu_prenom
-                ACCEPT Wprenom
-                DISPLAY "Nom : " fu_nom
-                ACCEPT Wnom
-                DISPLAY "Mail : " fu_mail
-                ACCEPT Wmail
-                PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
-                    READ futilisateur
-                        AT END MOVE 0 TO Wtrouve
-                    NOT AT END IF fu_mail = Wmail 
-                    MOVE fu_numutilisateur TO Wnumutilisateur
-                        DISPLAY "Mail déjà existant"
-                        MOVE 1 TO Wtrouve
-                    ELSE
-                        MOVE 0 TO Wtrouve
-                    END-IF
-                END-PERFORM
-                DISPLAY "Rôle : " fu_role
-                ACCEPT Wrole
-                DISPLAY "Mdp : " fu_mdp
-                ACCEPT Wmdp
-    
-                IF Wtrouve = 0
-                    MOVE Wnumutilisateur TO fu_numutilisateur
-                    MOVE Wprenom TO fu_prenom
-                    MOVE Wnom TO fu_nom
-                    MOVE Wmail TO fu_mail
-                    MOVE Wrole TO fu_role
-                    MOVE Wmdp TO fu_mdp
-    
-                    WRITE tamp_futilisateur
-                END-IF
-            ELSE
-                WRITE tamp_futilisateur
-            END-IF
-           END-PERFORM
-    
            CLOSE futilisateur.
-       STOP RUN.
        
+       SUPPRIMER_UTILISATEUR.
+           open I-O futilisateur
+       display "Suppression d'un utilisateur"
+       accept Wnom
+       accept Wprenom
+       perform with test after until Wtrouve = 1
+           read futilisateur
+               at end move 1 to Wtrouve
+               not at end
+                   if fu_nom = Wnom and fu_prenom = Wprenom
+                       display "Utilisateur trouvé"
+           display fu_nom " " fu_prenom " " fu_mail" "fu_role" "fu_mdp
+           display "Confirmer suppression utilisateur ? (O/N)"
+                       accept Wreponse
+                       if Wreponse = "O" or Wreponse = "o"
+                           delete futilisateur
+                           display "Utilisateur supprimé"
+                       else
+                           display "Suppression annulée"
+                       end-if
+                       move 1 to Wtrouve
+                   end-if
+           end-read
+       end-perform
+       close futilisateur.
+      
+        AFFICHAGE_UTILISATEUR.
+            OPEN INPUT futilisateur
+            MOVE 1 TO Wfin
+            PERFORM WITH TEST AFTER UNTIL Wfin=0
+                    READ futilisateur
+                    AT END MOVE 0 TO Wfin
+                    NOT AT END
+                       DISPLAY "Numéro : ["fu_numutilisateur"]"
+                       DISPLAY "Prénom : [" fu_prenom"]"
+                       DISPLAY "Nom : ["fu_nom "]"
+                       DISPLAY "Mail : ["fu_mail "]"
+                       DISPLAY "Role : ["fu_role "]"
+                       DISPLAY "Mdp : ["fu_mdp "]"
+                       DISPLAY "________________"
+                    END-READ
+            END-PERFORM
+            CLOSE futilisateur.
+       
+       stop run.
