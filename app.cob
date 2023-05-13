@@ -52,7 +52,7 @@
              02 fu_prenom PIC A(30).
              02 fu_mail PIC A(50).
              02 fu_mdp PIC 9(20).
-             02 fu_role PIC 9(2).
+             02 fu_role PIC 9(1).
              02 fu_connecte PIC A.
        
        FD flieu.
@@ -103,7 +103,6 @@
               77 Wfin PIC 9(1).
               77 Wmail_valide PIC 9(1).
               77 Wreponse PIC A(1).
-              77 Wancienrole PIC 9(2).
               77 attempts PIC 9(1).
               01 W_freservation.
                 02 W_fr_cle.
@@ -118,7 +117,7 @@
                 02 Wprenom PIC A(30).
                 02 Wmail PIC A(50).
                 02 Wmdp PIC 9(20).
-                02 Wrole PIC 9(2).
+                02 Wrole PIC 9(1).
                 02 Wconnecte PIC A.
                01 W_flieu.
                 02 Wnumlieu PIC 9(9).
@@ -254,7 +253,8 @@
                     DISPLAY "1. Modifier un utilisateur   "
                     DISPLAY "2. Ajout d'une réservation   "
                     DISPLAY "3. Modifier une réservation   "
-                    DISPLAY "4. Se déconnecter "
+                    DISPLAY "4. Rerchercher une réservation"
+                    DISPLAY "5. Se déconnecter "
                     DISPLAY "0. Quitter"
                     DISPLAY "Entrez votre choix (0-5):"
                     ACCEPT choice
@@ -267,6 +267,8 @@
                         WHEN '3'
                             PERFORM MODIFIER_RESERVATION
                         WHEN '4'
+                            PERFORM RECHERCHER_RESERVATION    
+                        WHEN '5'
                             DISPLAY "Vous êtes bien déconnecté"
                             PERFORM DECONNECTER_UTILISATEUR
                             PERFORM CONNEXION_UTILISATEUR
@@ -333,7 +335,7 @@
                         PERFORM MENU_LIEU
                     WHEN '5'
                         DISPLAY "Vous êtes bien déconnecté"
-                        MOVE 'O' TO Wconnecte
+                        PERFORM DECONNECTER_UTILISATEUR
                         PERFORM CONNEXION_UTILISATEUR
                     WHEN '0'
                         MOVE 'R' TO exitmenu
@@ -368,7 +370,11 @@
                         WHEN '5'
                             PERFORM SUPPRIMER_UTILISATEUR
                         WHEN '0'
+                            IF global_role_user = 2
                             PERFORM MENU_GERANT
+                            ELSE IF global_role_user = 3
+                            PERFORM MENU_ADMIN
+                            END-IF
                         WHEN OTHER
                             DISPLAY "Choix invalide. Veuillez réessayer."
                     END-EVALUATE
@@ -382,7 +388,8 @@
                     DISPLAY "1. Affichage des réservation"
                     DISPLAY "2. Ajout d'une réservation"
                     DISPLAY "3. Modifier une réservation   "
-                    DISPLAY "4. Supprimer un utilisateur   "
+                    DISPLAY "4. Rerchercher une réservation"
+                    DISPLAY "5. Supprimer un utilisateur   "
                     DISPLAY "0. Retour"
                     DISPLAY "Entrez votre choix (0-5):"
                     ACCEPT choice
@@ -395,6 +402,8 @@
                         WHEN '3'
                             PERFORM MODIFIER_RESERVATION
                         WHEN '4'
+                            PERFORM RECHERCHER_RESERVATION
+                        WHEN '5'
                             PERFORM SUPPRIMER_RESERVATION
                         WHEN '0'
                             PERFORM MENU_GERANT
@@ -564,9 +573,7 @@
         DECONNECTER_UTILISATEUR.
            OPEN I-O futilisateur
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
-               DISPLAY global_id_user
                MOVE global_id_user TO fu_numutilisateur
-               DISPLAY global_id_user
                READ futilisateur
                INVALID KEY  DISPLAY "Utilisateur introuvable"
                             MOVE 0 TO Wtrouve
