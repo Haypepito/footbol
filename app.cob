@@ -9,7 +9,7 @@
            ACCESS MODE IS DYNAMIC
            RECORD KEY IS fu_numutilisateur
            ALTERNATE RECORD KEY IS fu_nom WITH DUPLICATES
-           ALTERNATE RECORD KEY IS fu_mail WITH DUPLICATES
+           ALTERNATE RECORD KEY IS fu_mail
            FILE STATUS IS cr_futilisateur.
        
            SELECT flieu ASSIGN TO "lieux.dat"
@@ -108,6 +108,9 @@
               01 heure_saisie PIC 9(2).
               01 date_saisie PIC A(10).
               01 materiel PIC A(20).
+              01 Wmail-trimmed PIC X(50).
+              01 Wmail-length PIC 9(2).
+              01 Wmail-spaces PIC 9(2).
               01 id_utilisateur PIC 9(10).
                01 W_futilisateur.
                 02 Wnumutilisateur PIC 9(9).
@@ -160,11 +163,11 @@
                         OPEN OUTPUT fstat
                 END-IF
                 CLOSE fstat
-                PERFORM AFFICHAGE_UTILISATEUR.
 
-                PERFORM AFFICHAGE_RESERVATION.
-                PERFORM SUPPRIMER_RESERVATION.
-                PERFORM AFFICHAGE_RESERVATION.
+                PERFORM AFFICHAGE_UTILISATEUR.
+                PERFORM AJOUT_UTILISATEUR.
+                PERFORM AFFICHAGE_UTILISATEUR.
+                PERFORM SUPPRIMER_UTILISATEUR.
 
         STOP RUN.
         
@@ -199,33 +202,33 @@
               END-READ
            END-PERFORM
 
+           DISPLAY "Entrez votre email :"
+           ACCEPT Wmail
+
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
-               DISPLAY "Mail : "
-               ACCEPT Wmail
-               PERFORM WITH TEST AFTER UNTIL Wmail_valide = 1
-                   MOVE 0 TO Wtrouve
-                   READ futilisateur
-                   AT END
-                       MOVE 1 TO Wmail_valide
-                   NOT AT END
-                       IF fu_mail = Wmail
-                           DISPLAY "Mail déjà existant"
-                           MOVE 1 TO Wtrouve
-                       END-IF
-                   END-READ
-               END-PERFORM
+           READ futilisateur
+               AT END MOVE 0 TO Wtrouve
+               NOT AT END
+                   IF fu_mail = Wmail THEN
+                       MOVE 1 TO Wtrouve
+                       DISPLAY "L'email est déjà utilisé."
+                       DISPLAY "Entrez votre email :"
+                       ACCEPT Wmail
+                   END-IF
+           END-READ
            END-PERFORM
 
-    
            DISPLAY "Rôle : "
            ACCEPT Wrole
-       
            DISPLAY "Mdp : "
            ACCEPT Wmdp
-       
+
            MOVE W_futilisateur to tamp_futilisateur
            WRITE tamp_futilisateur
-           END-WRITE
+           IF cr_futilisateur = "00" THEN
+           DISPLAY "Utilisateur ajouté avec succès."
+           ELSE
+           DISPLAY "Erreur lors de l'écriture de l'utilisateur."
            CLOSE futilisateur.
 
        MODIF-UTILISATEUR.
