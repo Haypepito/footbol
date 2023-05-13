@@ -229,46 +229,10 @@
            DISPLAY "Utilisateur ajouté avec succès."
            ELSE
            DISPLAY "Erreur lors de l'écriture de l'utilisateur."
+           END-IF
            CLOSE futilisateur.
 
-       MODIF-UTILISATEUR.
-           OPEN I-O futilisateur
-           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
-               DISPLAY "Numéro de l'utilisateur à modifier : "
-               ACCEPT Wnumutilisateur
-               MOVE Wnumutilisateur TO fu_numutilisateur
-               READ futilisateur
-               INVALID KEY  DISPLAY "Utilisateur introuvable"
-                            MOVE 0 TO Wtrouve
-               NOT INVALID KEY MOVE 1 TO Wtrouve
-               END-READ
-           END-PERFORM
-    
-           IF Wtrouve = 1
-               MOVE fu_role TO Wrole
-               
-               DISPLAY "Nouveau nom : ( actuel " fu_nom" )"
-               ACCEPT Wnom
-               DISPLAY "Nouveau prénom : ( actuel " fu_prenom" )"
-               ACCEPT Wprenom
-               DISPLAY "Nouveau mail : ( actuel " fu_mail" )"
-               ACCEPT Wmail
-               DISPLAY "Nouveau mdp : ( actuel " fu_mdp" )"
-               ACCEPT Wmdp
-
-    
-           DISPLAY "Rôle : "
-           ACCEPT Wrole
-       
-           DISPLAY "Mdp : "
-           ACCEPT Wmdp
-       
-           MOVE W_futilisateur to tamp_futilisateur
-           WRITE tamp_futilisateur
-           END-WRITE
-           CLOSE futilisateur.
-
-       MODIF-UTILISATEUR.
+       MODIF_UTILISATEUR.
            OPEN I-O futilisateur
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
                DISPLAY "Numéro de l'utilisateur à modifier : "
@@ -300,11 +264,15 @@
                MOVE Wrole TO fu_role
     
                REWRITE tamp_futilisateur FROM W_futilisateur
-               DISPLAY "Utilisateur modifié avec succès"
+               IF cr_futilisateur = "00" THEN
+               DISPLAY "Utilisateur modifié avec succès."
+               ELSE
+               DISPLAY "Erreur lors de l'écriture de l'utilisateur."
+               END-IF
            END-IF
            CLOSE futilisateur.
 
-       MODIF-DROIT.
+       MODIF_DROIT.
            OPEN I-O futilisateur
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
                DISPLAY "Numéro de l'utilisateur à modifier : "
@@ -333,47 +301,20 @@
                MOVE Wrole TO fu_role
     
                REWRITE tamp_futilisateur FROM W_futilisateur
-               DISPLAY "Utilisateur modifié avec succès"
-           END-IF
-           CLOSE futilisateur.
-
-       MODIF-DROIT.
-           OPEN I-O futilisateur
-           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
-               DISPLAY "Numéro de l'utilisateur à modifier : "
-               ACCEPT Wnumutilisateur
-               MOVE Wnumutilisateur TO fu_numutilisateur
-               READ futilisateur
-               INVALID KEY  DISPLAY "Utilisateur introuvable"
-                            MOVE 0 TO Wtrouve
-               NOT INVALID KEY MOVE 1 TO Wtrouve
-               END-READ
-           END-PERFORM
-    
-           IF Wtrouve = 1
-               MOVE fu_mdp TO Wmdp
-               MOVE fu_nom TO Wnom
-               MOVE fu_prenom TO Wprenom
-               MOVE fu_mail TO Wmail
-               
-               DISPLAY "Nouveau rôle : ( actuel " fu_role" )"
-               ACCEPT Wrole
-
-               MOVE Wnom TO fu_nom
-               Move Wprenom TO fu_prenom
-               MOVE Wmail TO fu_mail
-               MOVE Wmdp TO fu_mdp
-               MOVE Wrole TO fu_role
-    
-               REWRITE tamp_futilisateur FROM W_futilisateur
-               DISPLAY "Rôle modifié avec succès"
+               IF cr_futilisateur = "00" THEN
+               DISPLAY "Utilisateur modifié avec succès."
+               ELSE
+               DISPLAY "Erreur lors de l'écriture de l'utilisateur."
+               END-IF
            END-IF
            CLOSE futilisateur.
        
        SUPPRIMER_UTILISATEUR.
            open I-O futilisateur
        display "Suppression d'un utilisateur"
+       display "Nom de l'utilisateur :"
        accept Wnom
+       display "Prénom de l'utilisateur :"
        accept Wprenom
        perform with test after until Wtrouve = 1
            read futilisateur
