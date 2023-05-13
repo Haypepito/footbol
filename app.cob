@@ -482,9 +482,9 @@
                        if fr_heure = heure_saisie and
                        fr_date = date_saisie and
                        fr_numterrain = terrain_saisi
-                           display "Lieu trouvé"
+                           display "Reservation trouvé"
                display fr_heure " " fr_date " " fr_numterrain
-               display "Confirmer suppression lieu ? (O/N)"
+               display "Confirmer suppression la réservation ? (O/N)"
                            accept Wreponse
                            if Wreponse = "O" or Wreponse = "o"
                                delete freservation
