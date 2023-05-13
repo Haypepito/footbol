@@ -68,7 +68,7 @@
                 03 fr_heure PIC 9(2).
                 03 fr_date PIC A(10).
              02 fr_numutilisateur PIC 9(10).
-             02 fr_materiel PIC A.
+             02 fr_materiel PIC A(10).
        
        FD fterrain.
           01 tamp_fterrain.
@@ -107,6 +107,7 @@
               01 terrain_saisi PIC 9(9).
               01 heure_saisie PIC 9(2).
               01 date_saisie PIC A(10).
+              01 materiel PIC A(20).
               01 id_utilisateur PIC 9(10).
                01 W_futilisateur.
                 02 Wnumutilisateur PIC 9(9).
@@ -160,11 +161,10 @@
                 END-IF
                 CLOSE fstat
                 PERFORM AFFICHAGE_UTILISATEUR.
-                
-              
-                PERFORM AFFICHAGE_TERRAIN.
-                PERFORM SUPPRIMER_TERRAIN.
-                PERFORM AFFICHAGE_TERRAIN.
+
+                PERFORM AFFICHAGE_RESERVATION.
+                PERFORM AJOUT_RESERVATION.
+                PERFORM AFFICHAGE_RESERVATION.
 
         STOP RUN.
         
@@ -412,40 +412,57 @@
             CLOSE futilisateur.
 
        AJOUT_RESERVATION.
-       OPEN I-O freservation
+           OPEN I-O freservation
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0 
+               DISPLAY "Entrez le numéro de terrain :"
+               ACCEPT terrain_saisi
 
-       DISPLAY "Entrez le numéro de terrain :"
-       ACCEPT terrain_saisi FROM CONSOLE.
+               DISPLAY "Entrez l'heure de la réservation :"
+               ACCEPT heure_saisie
 
-       DISPLAY "Entrez l'heure de la réservation :"
-       ACCEPT heure_saisie FROM CONSOLE.
+               DISPLAY "Entrez la date de la réservation :"
+               ACCEPT date_saisie
 
-       DISPLAY "Entrez la date de la réservation :"
-       ACCEPT date_saisie FROM CONSOLE.
-
-       DISPLAY "Entrez l'id de l'utilisateur de la réservation :"
-       ACCEPT id_utilisateur FROM CONSOLE.
-
-       READ freservation
-           INVALID KEY
                MOVE terrain_saisi TO fr_numterrain
                MOVE heure_saisie TO fr_heure
-               MOVE date_saisie TO fr_date
-               MOVE id_utilisateur TO fr_numutilisateur
-               MOVE "M" TO fr_materiel
+               MOVE date_saisie TO fr_date 
+               READ freservation
+                   INVALID KEY  DISPLAY " "
+                                    MOVE 0 TO Wtrouve
+                       NOT INVALID KEY DISPLAY "La réservation existe déjà."
+                                       MOVE 1 TO Wtrouve
+               END-READ 
+           END-PERFORM
 
-               WRITE tamp_freservation
-               IF cr_freservation = "00"
-                   DISPLAY "Réservation ajoutée avec succès."
-               ELSE
-                   DISPLAY "Erreur lors de l'ajout de la réservation."
-               END-IF
-           NOT INVALID KEY
-               DISPLAY "La réservation existe déjà."
-       END-READ
-       CLOSE freservation.
+           DISPLAY "Entrez l'id de l'utilisateur de la réservation :"
+           ACCEPT id_utilisateur
+           MOVE id_utilisateur TO fr_numutilisateur
+           DISPLAY "Entrez l'id de l'utilisateur de la réservation :"
+           ACCEPT materiel
+           MOVE materiel TO fr_materiel
+           WRITE tamp_freservation
+           IF cr_freservation = "00"
+               DISPLAY "Réservation ajoutée avec succès."
+           ELSE
+               DISPLAY "Erreur lors de l'ajout de la réservation."   
+           CLOSE freservation.
 
-       STOP RUN.
+       AFFICHAGE_RESERVATION.
+           OPEN INPUT freservation
+           MOVE 1 TO Wfin
+           PERFORM WITH TEST AFTER UNTIL Wfin=0
+                    READ freservation
+                    AT END MOVE 0 TO Wfin
+                    NOT AT END
+                       DISPLAY "Numéro : ["fr_numterrain"]"
+                       DISPLAY "Num Utilisateur : ["fr_numutilisateur"]"
+                       DISPLAY "Date : ["fr_date"]"
+                       DISPLAY "Crénaux : ["fr_heure"]"
+                       DISPLAY "Matériel : ["fr_materiel"]"
+                       DISPLAY "________________"
+                    END-READ
+           END-PERFORM
+           CLOSE freservation.
        
        AJOUT_LIEU.
            OPEN I-O flieu
@@ -711,4 +728,3 @@
                end-read
            end-perform
            close fterrain.
-       
