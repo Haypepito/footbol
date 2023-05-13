@@ -68,7 +68,7 @@
                 03 fr_heure PIC 9(2).
                 03 fr_date PIC A(10).
              02 fr_numutilisateur PIC 9(10).
-             02 fr_materiel PIC A(10).
+             02 fr_materiel PIC A(3).
        
        FD fterrain.
           01 tamp_fterrain.
@@ -103,15 +103,13 @@
               77 Wmail_valide PIC 9(1).
               77 Wreponse PIC A(1).
               77 Wancienrole PIC 9(2).
-              01 lieu_saisi PIC A(50).
-              01 terrain_saisi PIC 9(9).
-              01 heure_saisie PIC 9(2).
-              01 date_saisie PIC A(10).
-              01 materiel PIC A(20).
-              01 Wmail-trimmed PIC X(50).
-              01 Wmail-length PIC 9(2).
-              01 Wmail-spaces PIC 9(2).
-              01 id_utilisateur PIC 9(10).
+              01 W_freservation.
+                02 W_fr_cle.
+                  03 terrain_saisi PIC 9(9).
+                  03 heure_saisie PIC 9(2).
+                  03 date_saisie PIC A(10).
+                02 id_utilisateur PIC 9(10).  
+                02 materiel PIC A(3).
                01 W_futilisateur.
                 02 Wnumutilisateur PIC 9(9).
                 02 Wnom PIC A(30).
@@ -163,11 +161,9 @@
                         OPEN OUTPUT fstat
                 END-IF
                 CLOSE fstat
-
                 PERFORM AFFICHAGE_UTILISATEUR.
-                PERFORM AJOUT_UTILISATEUR.
-                PERFORM AFFICHAGE_UTILISATEUR.
-                PERFORM SUPPRIMER_UTILISATEUR.
+                PERFORM AFFICHAGE_RESERVATION.
+                PERFORM MODIFIER_RESERVATION.
 
         STOP RUN.
         
@@ -381,7 +377,7 @@
            DISPLAY "Entrez l'id de l'utilisateur de la réservation :"
            ACCEPT id_utilisateur
            MOVE id_utilisateur TO fr_numutilisateur
-           DISPLAY "Entrez l'id de l'utilisateur de la réservation :"
+           DISPLAY "Location de matériel (Oui/Non) :"
            ACCEPT materiel
            MOVE materiel TO fr_materiel
            WRITE tamp_freservation
@@ -432,7 +428,7 @@
                            accept Wreponse
                            if Wreponse = "O" or Wreponse = "o"
                                delete freservation
-                               display "Lieu supprimé"
+                               display "Réservation supprimée"
                            else
                                display "Suppression annulée"
                            end-if
@@ -441,6 +437,62 @@
                end-read
            end-perform
            close freservation.
+
+        MODIFIER_RESERVATION.
+            OPEN I-O freservation
+            PERFORM UNTIL Wtrouve = 1
+                DISPLAY "Entrez le numéro de terrain :"
+                ACCEPT terrain_saisi
+
+                DISPLAY "Entrez l'heure de la réservation :"
+                ACCEPT heure_saisie
+
+                DISPLAY "Entrez la date de la réservation :"
+                ACCEPT date_saisie
+                MOVE id_utilisateur TO fr_numutilisateur
+                MOVE terrain_saisi TO fr_numterrain
+                MOVE date_saisie TO fr_date
+                READ freservation
+                INVALID KEY DISPLAY "Utilisateur introuvable"
+                    MOVE 0 TO Wtrouve
+                NOT INVALID KEY MOVE 1 TO Wtrouve
+                    DISPLAY "Réservation trouvée :"
+                    DISPLAY "Nouveau matériel : (actuel: " fr_materiel ")"
+                    ACCEPT materiel
+                    OPEN I-O futilisateur
+                   PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+                       DISPLAY "Nouvel Utilisateur : (actuel: " fr_numutilisateur ")"
+                       ACCEPT id_utilisateur
+                       MOVE id_utilisateur TO fu_numutilisateur
+                       READ futilisateur
+                       INVALID KEY  DISPLAY "Utilisateur introuvable"
+                                    MOVE 0 TO Wtrouve
+                       NOT INVALID KEY MOVE 1 TO Wtrouve
+                            CLOSE futilisateur
+                       END-READ
+                   END-PERFORM
+                    
+                    
+
+                    MOVE id_utilisateur TO fr_numutilisateur
+                    MOVE terrain_saisi TO fr_numterrain
+                    MOVE date_saisie TO fr_date
+                    MOVE heure_saisie TO fr_heure
+                    MOVE materiel TO fr_materiel
+                    DISPLAY fr_materiel
+
+                    REWRITE tamp_freservation FROM W_freservation
+                    IF cr_freservation = "00"
+                        DISPLAY "Réservation modifiée avec succès."
+                    ELSE
+                        DISPLAY "Erreur lors de la modification de la réservation."
+                    END-IF
+                END-READ
+            END-PERFORM
+
+            CLOSE freservation.
+
+
        
        AJOUT_LIEU.
            OPEN I-O flieu
