@@ -31,7 +31,7 @@
            ORGANIZATION IS INDEXED
            ACCESS MODE IS DYNAMIC
            RECORD KEY IS ft_numterrain
-           ALTERNATE RECORD KEY IS ft_lieu WITH DUPLICATES
+           ALTERNATE RECORD KEY IS ft_numlieuT WITH DUPLICATES
            FILE STATUS IS cr_fterrain.
        
            SELECT fstat ASSIGN TO "statistiques.dat"
@@ -59,7 +59,7 @@
              02 fl_numlieu PIC 9(9).
              02 fl_gerant PIC 9(9).
              02 fl_adresse PIC A(50).
-             02 fl_terrain_existant PIC 9(9).
+             02 fl_terrain_existant PIC 9(2).
        
        FD freservation.
           01 tamp_freservation.
@@ -67,13 +67,14 @@
                 03 fr_numterrain PIC 9(9).
                 03 fr_heure PIC 9(2).
                 03 fr_date PIC A(10).
-             02 fr_numutilisateur PIC A(10).
+             02 fr_numutilisateur PIC 9(10).
              02 fr_materiel PIC A.
        
        FD fterrain.
           01 tamp_fterrain.
              02 ft_numterrain PIC 9(9).
              02 ft_lieu PIC A(50).
+             02 ft_numlieuT PIC 9(9).
              02 ft_longueur PIC 9(4).
              02 ft_largeur PIC 9(4).
              02 ft_type PIC A(20).
@@ -102,10 +103,11 @@
               77 Wmail_valide PIC 9(1).
               77 Wreponse PIC A(1).
               77 Wancienrole PIC 9(2).
-               01 lieu_saisi PIC A(50).
-               01 heure_saisie PIC 9(2).
-               01 date_saisie PIC A(10).
-               01 id_utilisateur PIC 9(10).
+              01 lieu_saisi PIC A(50).
+              01 terrain_saisi PIC 9(9).
+              01 heure_saisie PIC 9(2).
+              01 date_saisie PIC A(10).
+              01 id_utilisateur PIC 9(10).
                01 W_futilisateur.
                 02 Wnumutilisateur PIC 9(9).
                 02 Wnom PIC A(30).
@@ -113,6 +115,19 @@
                 02 Wmail PIC A(50).
                 02 Wmdp PIC 9(20).
                 02 Wrole PIC 9(2).
+               01 W_flieu.
+                02 Wnumlieu PIC 9(9).
+                02 Wgerant PIC 9(9).
+                02 Wadresse PIC A(50).
+                02 Wterrain_existant PIC 9(2).
+               01 W_fterrain.
+                02 Wnumterrain PIC 9(9).
+                02 WnumlieuT PIC 9(9).
+                02 Wlongueur PIC 9(4).
+                02 Wlargeur PIC 9(4).
+                02 Wtype PIC A(20).
+                02 Wprix PIC 9(5).
+                02 Wcouvert PIC A. 
 
         PROCEDURE DIVISION.
                 OPEN I-O futilisateur
@@ -146,6 +161,11 @@
                 CLOSE fstat
                 PERFORM AFFICHAGE_UTILISATEUR.
                 
+              
+                PERFORM AFFICHAGE_TERRAIN.
+                PERFORM SUPPRIMER_TERRAIN.
+                PERFORM AFFICHAGE_TERRAIN.
+
         STOP RUN.
         
         AJOUT_UTILISATEUR.
@@ -232,6 +252,76 @@
                ACCEPT Wmail
                DISPLAY "Nouveau mdp : ( actuel " fu_mdp" )"
                ACCEPT Wmdp
+
+    
+           DISPLAY "Rôle : "
+           ACCEPT Wrole
+       
+           DISPLAY "Mdp : "
+           ACCEPT Wmdp
+       
+           MOVE W_futilisateur to tamp_futilisateur
+           WRITE tamp_futilisateur
+           END-WRITE
+           CLOSE futilisateur.
+
+       MODIF-UTILISATEUR.
+           OPEN I-O futilisateur
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+               DISPLAY "Numéro de l'utilisateur à modifier : "
+               ACCEPT Wnumutilisateur
+               MOVE Wnumutilisateur TO fu_numutilisateur
+               READ futilisateur
+               INVALID KEY  DISPLAY "Utilisateur introuvable"
+                            MOVE 0 TO Wtrouve
+               NOT INVALID KEY MOVE 1 TO Wtrouve
+               END-READ
+           END-PERFORM
+    
+           IF Wtrouve = 1
+               MOVE fu_role TO Wrole
+               
+               DISPLAY "Nouveau nom : ( actuel " fu_nom" )"
+               ACCEPT Wnom
+               DISPLAY "Nouveau prénom : ( actuel " fu_prenom" )"
+               ACCEPT Wprenom
+               DISPLAY "Nouveau mail : ( actuel " fu_mail" )"
+               ACCEPT Wmail
+               DISPLAY "Nouveau mdp : ( actuel " fu_mdp" )"
+               ACCEPT Wmdp
+
+               MOVE Wnom TO fu_nom
+               Move Wprenom TO fu_prenom
+               MOVE Wmail TO fu_mail
+               MOVE Wmdp TO fu_mdp
+               MOVE Wrole TO fu_role
+    
+               REWRITE tamp_futilisateur FROM W_futilisateur
+               DISPLAY "Utilisateur modifié avec succès"
+           END-IF
+           CLOSE futilisateur.
+
+       MODIF-DROIT.
+           OPEN I-O futilisateur
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+               DISPLAY "Numéro de l'utilisateur à modifier : "
+               ACCEPT Wnumutilisateur
+               MOVE Wnumutilisateur TO fu_numutilisateur
+               READ futilisateur
+               INVALID KEY  DISPLAY "Utilisateur introuvable"
+                            MOVE 0 TO Wtrouve
+               NOT INVALID KEY MOVE 1 TO Wtrouve
+               END-READ
+           END-PERFORM
+    
+           IF Wtrouve = 1
+               MOVE fu_mdp TO Wmdp
+               MOVE fu_nom TO Wnom
+               MOVE fu_prenom TO Wprenom
+               MOVE fu_mail TO Wmail
+               
+               DISPLAY "Nouveau rôle : ( actuel " fu_role" )"
+               ACCEPT Wrole
 
                MOVE Wnom TO fu_nom
                Move Wprenom TO fu_prenom
@@ -324,8 +414,8 @@
        AJOUT_RESERVATION.
        OPEN I-O freservation
 
-       DISPLAY "Entrez le lieu de la réservation :"
-       ACCEPT lieu_saisi FROM CONSOLE.
+       DISPLAY "Entrez le numéro de terrain :"
+       ACCEPT terrain_saisi FROM CONSOLE.
 
        DISPLAY "Entrez l'heure de la réservation :"
        ACCEPT heure_saisie FROM CONSOLE.
@@ -338,7 +428,7 @@
 
        READ freservation
            INVALID KEY
-               MOVE lieu_saisi TO ft_lieu
+               MOVE terrain_saisi TO fr_numterrain
                MOVE heure_saisie TO fr_heure
                MOVE date_saisie TO fr_date
                MOVE id_utilisateur TO fr_numutilisateur
@@ -353,8 +443,272 @@
            NOT INVALID KEY
                DISPLAY "La réservation existe déjà."
        END-READ
-
        CLOSE freservation.
 
        STOP RUN.
+       
+       AJOUT_LIEU.
+           OPEN I-O flieu
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+                   DISPLAY "Numero du lieu: "
+                   ACCEPT Wnumlieu
+                   MOVE Wnumlieu TO fl_numlieu
+                   READ flieu
+                   INVALID KEY  DISPLAY " "
+                                MOVE 0 TO Wtrouve
+                   NOT INVALID KEY DISPLAY "Numéro déjà utilisé"
+                                   MOVE 1 TO Wtrouve
+                   END-READ
+           END-PERFORM
+
+           OPEN I-O futilisateur
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+               DISPLAY "Numéro de l'utilisateur : "
+               ACCEPT Wgerant
+               MOVE Wgerant TO fu_numutilisateur
+               READ futilisateur
+               INVALID KEY  DISPLAY "Utilisateur introuvable"
+                            MOVE 0 TO Wtrouve
+               NOT INVALID KEY MOVE 1 TO Wtrouve
+                           MOVE Wgerant TO fl_gerant
+               END-READ
+           END-PERFORM
+           CLOSE futilisateur
+    
+           DISPLAY "Adresse du lieu : "
+           ACCEPT Wadresse
+
+           DISPLAY "Nombre de terrain pour le lieu : "
+           ACCEPT Wterrain_existant
+       
+           MOVE W_flieu to tamp_flieu
+           WRITE tamp_flieu
+           END-WRITE
+           CLOSE flieu.
+
+       AFFICHAGE_LIEU.
+           OPEN INPUT flieu
+           MOVE 1 TO Wfin
+           PERFORM WITH TEST AFTER UNTIL Wfin=0
+                    READ flieu
+                    AT END MOVE 0 TO Wfin
+                    NOT AT END
+                       DISPLAY "Numéro : ["fl_numlieu"]"
+                       DISPLAY "Gérant : ["fl_gerant"]"
+                       DISPLAY "Adresse : ["fl_adresse"]"
+                       DISPLAY "Nombre de terrain : ["
+                       fl_terrain_existant"]"
+                       DISPLAY "________________"
+                    END-READ
+           END-PERFORM
+           CLOSE flieu.
+
+       MODIF-LIEU.
+           OPEN I-O flieu
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+               DISPLAY "Numéro du lieu à modifier : "
+               ACCEPT Wnumlieu
+               MOVE Wnumlieu TO fl_numlieu
+               READ flieu
+               INVALID KEY  DISPLAY "Lieu introuvable"
+                            MOVE 0 TO Wtrouve
+               NOT INVALID KEY MOVE 1 TO Wtrouve
+               END-READ
+           END-PERFORM
+    
+           IF Wtrouve = 1
+
+           OPEN I-O futilisateur
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+               DISPLAY "Numéro de l'utilisateur : "
+               ACCEPT Wgerant
+               MOVE Wgerant TO fu_numutilisateur
+               READ futilisateur
+               INVALID KEY  DISPLAY "Utilisateur introuvable"
+                            MOVE 0 TO Wtrouve
+               NOT INVALID KEY MOVE 1 TO Wtrouve
+               END-READ
+           END-PERFORM
+           CLOSE futilisateur
+               
+               DISPLAY "Nouvelle adresse : ( actuel "fl_adresse" )"
+               ACCEPT Wadresse
+               DISPLAY "Nouveau nombre de terrain : ( actuel "
+               fl_terrain_existant" )"
+               ACCEPT Wterrain_existant
+
+               MOVE Wgerant TO fl_gerant
+               Move Wadresse TO fl_adresse
+               MOVE Wterrain_existant TO fl_terrain_existant
+    
+               REWRITE tamp_flieu FROM W_flieu
+               DISPLAY "Lieu modifié avec succès"
+           END-IF
+           CLOSE flieu.
+
+       SUPPRIMER_LIEU.
+           open I-O flieu
+           display "Suppression d'un lieu"
+           accept Wnumlieu
+           perform with test after until Wtrouve = 1
+               read flieu
+                   at end move 1 to Wtrouve
+                   not at end
+                       if fl_numlieu = Wnumlieu
+                           display "Lieu trouvé"
+               display fl_gerant " " fl_adresse " " fl_terrain_existant
+               display "Confirmer suppression lieu ? (O/N)"
+                           accept Wreponse
+                           if Wreponse = "O" or Wreponse = "o"
+                               delete flieu
+                               display "Lieu supprimé"
+                           else
+                               display "Suppression annulée"
+                           end-if
+                           move 1 to Wtrouve
+                       end-if
+               end-read
+           end-perform
+           close flieu.
+
+       AJOUT_TERRAIN.
+           OPEN I-O fterrain
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+                   DISPLAY "Numero du terrain :"
+                   ACCEPT Wnumterrain
+                   MOVE Wnumterrain TO ft_numterrain
+                   READ fterrain
+                   INVALID KEY  DISPLAY " "
+                                MOVE 0 TO Wtrouve
+                   NOT INVALID KEY DISPLAY "Numéro déjà utilisé"
+                                   MOVE 1 TO Wtrouve
+                   END-READ
+           END-PERFORM
+
+           OPEN I-O flieu
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+               DISPLAY "Numéro de lieu : "
+               ACCEPT WnumlieuT
+               MOVE WnumlieuT TO fl_numlieu
+               READ flieu
+               INVALID KEY  DISPLAY "Lieu introuvable"
+                            MOVE 0 TO Wtrouve
+               NOT INVALID KEY MOVE 1 TO Wtrouve
+                           MOVE WnumlieuT TO ft_numlieuT
+               END-READ
+           END-PERFORM
+           CLOSE flieu
+    
+           DISPLAY "Longueur : "
+           ACCEPT Wlongueur
+           DISPLAY "Largeur : "
+           ACCEPT Wlargeur
+           DISPLAY "Type : "
+           ACCEPT Wtype
+           DISPLAY "Prix : "
+           ACCEPT Wprix
+           DISPLAY "Couvert (O/N) : "
+           ACCEPT Wcouvert
+       
+           MOVE W_fterrain to tamp_fterrain
+           WRITE tamp_fterrain
+           END-WRITE
+           CLOSE fterrain.
+
+       AFFICHAGE_TERRAIN.
+           OPEN INPUT fterrain
+           MOVE 1 TO Wfin
+           PERFORM WITH TEST AFTER UNTIL Wfin=0
+                   READ fterrain
+                   AT END MOVE 0 TO Wfin
+                   NOT AT END
+                       DISPLAY "Numéro : ["ft_numterrain"]"
+                       DISPLAY "Lieu : ["ft_numlieuT"]"
+                       DISPLAY "Longueur : ["ft_longueur"]"
+                       DISPLAY "Largeur : ["ft_largeur"]"
+                       DISPLAY "Type : ["ft_type "]"
+                       DISPLAY "Prix : ["ft_prix "]"
+                       DISPLAY "Couvert : ["ft_couvert "]"
+                       DISPLAY "________________"
+                   END-READ
+           END-PERFORM
+           CLOSE fterrain.
+
+       MODIFIER_TERRAIN.
+           OPEN I-O fterrain
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+               DISPLAY "Numéro du terrain à modifier : "
+               ACCEPT Wnumterrain
+               MOVE Wnumterrain TO ft_numterrain
+               READ fterrain
+               INVALID KEY  DISPLAY "Terrain introuvable"
+                            MOVE 0 TO Wtrouve
+               NOT INVALID KEY MOVE 1 TO Wtrouve
+               END-READ
+           END-PERFORM
+    
+           IF Wtrouve = 1
+           OPEN I-O flieu
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+               DISPLAY "Numéro de lieu : "
+               ACCEPT WnumlieuT
+               MOVE WnumlieuT TO fl_numlieu
+               READ flieu
+               INVALID KEY  DISPLAY "Lieu introuvable"
+                            MOVE 0 TO Wtrouve
+               NOT INVALID KEY MOVE 1 TO Wtrouve
+                           MOVE WnumlieuT TO ft_numlieuT
+               END-READ
+           END-PERFORM
+           CLOSE flieu
+            
+           DISPLAY "Nouvelle longueur : (actuelle " ft_longueur")"
+           ACCEPT Wlongueur
+           DISPLAY "Nouvelle largeur : (actuelle " ft_largeur")"
+           ACCEPT Wlargeur
+           DISPLAY "Nouveau type : (actuel " ft_type")"
+           ACCEPT Wtype
+           DISPLAY "Nouveau prix : (actuel " ft_prix")"
+           ACCEPT Wprix
+           DISPLAY "Couvert (O/N) : (actuel " ft_couvert")"
+           ACCEPT Wcouvert
+
+           MOVE Wlongueur TO ft_longueur
+           MOVE Wlargeur TO ft_largeur
+           MOVE Wtype TO ft_type
+           Move Wprix TO ft_prix
+           MOVE Wcouvert TO ft_couvert
+    
+           REWRITE tamp_fterrain FROM W_fterrain
+           DISPLAY "Terrain modifié avec succès"
+           END-IF
+           CLOSE fterrain.
+
+       SUPPRIMER_TERRAIN.
+           open I-O fterrain
+           display "Suppression d'un terrain"
+           DISPLAY "Numéro de terrain : "
+           accept Wnumterrain
+           DISPLAY "Numéro de lieu : "
+           accept WnumlieuT
+           perform with test after until Wtrouve = 1
+               read fterrain
+                   at end move 1 to Wtrouve
+                   not at end
+                       if ft_numterrain = Wnumterrain and ft_numlieuT =
+                       WnumlieuT
+                           display "Terrain trouvé"
+               display "Confirmer suppression terrain ? (O/N)"
+                           accept Wreponse
+                           if Wreponse = "O" or Wreponse = "o"
+                               delete fterrain
+                               display "Terrain supprimé"
+                           else
+                               display "Suppression annulée"
+                           end-if
+                           move 1 to Wtrouve
+                       end-if
+               end-read
+           end-perform
+           close fterrain.
        
