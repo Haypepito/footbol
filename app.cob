@@ -163,7 +163,7 @@
                 PERFORM AFFICHAGE_UTILISATEUR.
 
                 PERFORM AFFICHAGE_RESERVATION.
-                PERFORM AJOUT_RESERVATION.
+                PERFORM SUPPRIMER_RESERVATION.
                 PERFORM AFFICHAGE_RESERVATION.
 
         STOP RUN.
@@ -463,6 +463,40 @@
                     END-READ
            END-PERFORM
            CLOSE freservation.
+
+        SUPPRIMER_RESERVATION.
+           open I-O freservation
+           DISPLAY "Entrez le numéro de terrain :"
+               ACCEPT terrain_saisi
+
+               DISPLAY "Entrez l'heure de la réservation :"
+               ACCEPT heure_saisie
+
+               DISPLAY "Entrez la date de la réservation :"
+               ACCEPT date_saisie
+
+           perform with test after until Wtrouve = 1
+               read freservation
+                   at end move 1 to Wtrouve
+                   not at end
+                       if fr_heure = heure_saisie and
+                       fr_date = date_saisie and
+                       fr_numterrain = terrain_saisi
+                           display "Lieu trouvé"
+               display fr_heure " " fr_date " " fr_numterrain
+               display "Confirmer suppression lieu ? (O/N)"
+                           accept Wreponse
+                           if Wreponse = "O" or Wreponse = "o"
+                               delete freservation
+                               display "Lieu supprimé"
+                           else
+                               display "Suppression annulée"
+                           end-if
+                           move 1 to Wtrouve
+                       end-if
+               end-read
+           end-perform
+           close freservation.
        
        AJOUT_LIEU.
            OPEN I-O flieu
