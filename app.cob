@@ -166,73 +166,74 @@
                         OPEN OUTPUT fstat
                 END-IF
                 CLOSE fstat
-                DISPLAY "________________________________________________________________"
-                DISPLAY "                    Bienvenue dans FootBol "
-                DISPLAY "________________________________________________________________"
-                PERFORM UNTIL exitmenu = 'Y'
-                    DISPLAY "________________________________________________________________"
-                    DISPLAY "               Bienvenue dans le menu de FootBol "
-                    DISPLAY "________________________________________________________________"
-                    DISPLAY "1. Connexion "
-                    DISPLAY "0. Quitter"
-                    DISPLAY "Entrez votre choix (0-1):"
-                    ACCEPT choice
-                    EVALUATE choice
-                        WHEN '1'
-                            PERFORM AFFICHAGE_UTILISATEUR
-                            PERFORM CONNEXION_UTILISATEUR
-                        WHEN '0'
-                            MOVE 'Y' TO exitmenu
-                        WHEN OTHER
-                            DISPLAY "Choix invalide. Veuillez réessayer."
-                    END-EVALUATE
-                END-PERFORM.
-
+                PERFORM CONNEXION_UTILISATEUR
         STOP RUN.
 
        CONNEXION_UTILISATEUR.
-           OPEN I-O futilisateur
-           DISPLAY "Entrez votre email :"
-           ACCEPT Wmail
-           DISPLAY "Entrez votre mot de passe :"
-           ACCEPT Wmdp
-           SET Wtrouve TO 0
-           SET attempts TO 0.
-           PERFORM UNTIL Wtrouve = 1 OR attempts = 3
-               READ futilisateur RECORD KEY IS fu_mail
-               AT END 
-                   DISPLAY "Trop de tentatives. Programme terminé."
-                   CLOSE futilisateur
-                   STOP RUN
-               NOT AT END
-                   IF fu_mdp = Wmdp THEN
-                       SET Wtrouve TO 1
-                       EVALUATE fu_role
-                       WHEN 1
-                           DISPLAY "Bienvenue, vous êtes un inscrit simple"
-                           MOVE 'O' TO Wconnecte
-                           PERFORM MENU_UTILISATEUR
-                       WHEN 2
-                           DISPLAY "Bienvenue, vous êtes un gérant"
-                           MOVE 'O' TO Wconnecte
-                       WHEN 3
-                           DISPLAY "Bienvenue, vous êtes un administrateur"
-                           MOVE 'O' TO Wconnecte
-                       END-EVALUATE
-                   ELSE
-                       ADD 1 TO attempts
-                       IF attempts = 3 THEN
-                           DISPLAY "Trop de tentatives. Programme terminé."
-                           CLOSE futilisateur
-                           STOP RUN
-                       ELSE
-                           DISPLAY "Mot de passe ou mail incorrect. Essayez encore."
-                           ACCEPT Wmdp
-                           READ futilisateur NEXT RECORD
-                       END-IF
-                   END-IF
-               END-READ
-           END-PERFORM
+           DISPLAY "________________________________________________________________"
+            DISPLAY "________________________________________________________________"
+            DISPLAY "                    Bienvenue dans FootBol "
+            DISPLAY "________________________________________________________________"
+            PERFORM UNTIL exitmenu = 'Y'
+                DISPLAY "________________________________________________________________"
+                DISPLAY "               Bienvenue dans le menu de FootBol "
+                DISPLAY "________________________________________________________________"
+                DISPLAY "1. Connexion "
+                DISPLAY "0. Quitter"
+                DISPLAY "Entrez votre choix (0-1):"
+                ACCEPT choice
+                EVALUATE choice
+                    WHEN '1'
+                       OPEN I-O futilisateur
+                       DISPLAY "Entrez votre email :"
+                       ACCEPT Wmail
+                       DISPLAY "Entrez votre mot de passe :"
+                       ACCEPT Wmdp
+                       SET Wtrouve TO 0
+                       SET attempts TO 0
+                       PERFORM UNTIL Wtrouve = 1 OR attempts = 3
+                           READ futilisateur RECORD KEY IS fu_mail
+                           AT END 
+                               DISPLAY "Trop de tentatives. Programme terminé."
+                               CLOSE futilisateur
+                               STOP RUN
+                           NOT AT END
+                               IF fu_mdp = Wmdp THEN
+                                   SET Wtrouve TO 1
+                                   EVALUATE fu_role
+                                   WHEN 1
+                                       DISPLAY "Bienvenue, vous êtes un inscrit simple"
+                                       MOVE 'O' TO Wconnecte
+                                       PERFORM MENU_UTILISATEUR
+                                   WHEN 2
+                                       DISPLAY "Bienvenue, vous êtes un gérant"
+                                       MOVE 'O' TO Wconnecte
+                                       PERFORM MENU_GERANT
+                                   WHEN 3
+                                       DISPLAY "Bienvenue, vous êtes un administrateur"
+                                       MOVE 'O' TO Wconnecte
+                                   END-EVALUATE
+                               ELSE
+                                   ADD 1 TO attempts
+                                   IF attempts = 3 THEN
+                                       DISPLAY "Trop de tentatives. Programme terminé."
+                                       CLOSE futilisateur
+                                       STOP RUN
+                                   ELSE
+                                       DISPLAY "Mot de passe ou mail incorrect. Essayez encore."
+                                       ACCEPT Wmdp
+                                       READ futilisateur NEXT RECORD
+                                   END-IF
+                               END-IF
+                           END-READ
+                       END-PERFORM
+                    WHEN '0'
+                        MOVE 'Y' TO exitmenu
+                    WHEN OTHER
+                        DISPLAY "Choix invalide. Veuillez réessayer."
+                END-EVALUATE
+            END-PERFORM
+           
            CLOSE futilisateur.
 
        MENU_UTILISATEUR.
@@ -267,10 +268,10 @@
                     END-EVALUATE
                 END-PERFORM.
 
-        MENU_RESERVATION.
+        MENU_GERANT.
             PERFORM UNTIL exitmenu = 'R'
                 DISPLAY "________________________________________________________________"
-                DISPLAY "         Bienvenue dans le menu reservation de FootBol "
+                DISPLAY "         Bienvenue dans le menu Gérant de FootBol "
                 DISPLAY "________________________________________________________________"
                 DISPLAY "1. Affichage des reservations"
                 DISPLAY "2. Ajout des reservations"
@@ -350,7 +351,7 @@
            ACCEPT Wrole
            DISPLAY "Mdp : "
            ACCEPT Wmdp
-
+           MOVE 'N' TO Wconnecte 
            MOVE W_futilisateur to tamp_futilisateur
            WRITE tamp_futilisateur
            IF cr_futilisateur = "00" THEN
@@ -477,6 +478,7 @@
                        DISPLAY "Nom : ["fu_nom "]"
                        DISPLAY "Mail : ["fu_mail "]"
                        DISPLAY "Role : ["fu_role "]"
+                       DISPLAY "Connecté : ["fu_connecte "]"
                        DISPLAY "Mdp : ["fu_mdp "]"
                        DISPLAY "________________________________"
                     END-READ
