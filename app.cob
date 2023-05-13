@@ -130,6 +130,8 @@
                 02 Wtype PIC A(20).
                 02 Wprix PIC 9(5).
                 02 Wcouvert PIC A. 
+              01 choice PIC A.
+              01 exitmenu PIC A.  
 
         PROCEDURE DIVISION.
                 OPEN I-O futilisateur
@@ -161,9 +163,36 @@
                         OPEN OUTPUT fstat
                 END-IF
                 CLOSE fstat
+                DISPLAY "________________________________________________________________"
+                DISPLAY "                    Bienvenue dans FootBol "
+                DISPLAY "________________________________________________________________"
+                PERFORM UNTIL exitmenu = 'Y'
+                    DISPLAY "________________________________________________________________"
+                    DISPLAY "               Bienvenue dans le menu de FootBol "
+                    DISPLAY "________________________________________________________________"
+                    DISPLAY "1. Affichage des utilisateurs"
+                    DISPLAY "2. Affichage des reservations"
+                    DISPLAY "3. Affichage des terrains    "
+                    DISPLAY "0. Quitter"
+                    DISPLAY "Entrez votre choix (0-3):"
+                    ACCEPT choice
+
+                    EVALUATE choice
+                        WHEN '1'
+                            PERFORM AFFICHAGE_UTILISATEUR
+                        WHEN '2'
+                            PERFORM AFFICHAGE_RESERVATION
+                        WHEN '3'
+                            PERFORM AFFICHAGE_TERRAIN
+                        WHEN '0'
+                            MOVE 'Y' TO exitmenu
+                        WHEN OTHER
+                            DISPLAY "Choix invalide. Veuillez réessayer."
+                    END-EVALUATE
+                END-PERFORM.
                 PERFORM AFFICHAGE_UTILISATEUR.
                 PERFORM AFFICHAGE_RESERVATION.
-                PERFORM MODIFIER_RESERVATION.
+                PERFORM AFFICHAGE_RESERVATION.
 
         STOP RUN.
         
@@ -346,12 +375,14 @@
                        DISPLAY "Mail : ["fu_mail "]"
                        DISPLAY "Role : ["fu_role "]"
                        DISPLAY "Mdp : ["fu_mdp "]"
-                       DISPLAY "________________"
+                       DISPLAY "________________________________"
                     END-READ
             END-PERFORM
             CLOSE futilisateur.
 
        AJOUT_RESERVATION.
+           DISPLAY "Ajouter une réservation"
+           DISPLAY "________________________________"
            OPEN I-O freservation
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 0 
                DISPLAY "Entrez le numéro de terrain :"
@@ -388,6 +419,8 @@
            CLOSE freservation.
 
        AFFICHAGE_RESERVATION.
+           DISPLAY "Toutes les réservations"
+           DISPLAY "________________________________" 
            OPEN INPUT freservation
            MOVE 1 TO Wfin
            PERFORM WITH TEST AFTER UNTIL Wfin=0
@@ -399,12 +432,14 @@
                        DISPLAY "Date : ["fr_date"]"
                        DISPLAY "Crénaux : ["fr_heure"]"
                        DISPLAY "Matériel : ["fr_materiel"]"
-                       DISPLAY "________________"
+                       DISPLAY "________________________________"
                     END-READ
            END-PERFORM
            CLOSE freservation.
 
         SUPPRIMER_RESERVATION.
+           DISPLAY "Supprimer une réservation"
+           DISPLAY "________________________________"
            open I-O freservation
            DISPLAY "Entrez le numéro de terrain :"
                ACCEPT terrain_saisi
@@ -439,6 +474,8 @@
            close freservation.
 
         MODIFIER_RESERVATION.
+            DISPLAY "Modifier une réservation"
+            DISPLAY "________________________________"
             OPEN I-O freservation
             PERFORM UNTIL Wtrouve = 1
                 DISPLAY "Entrez le numéro de terrain :"
@@ -545,7 +582,7 @@
                        DISPLAY "Adresse : ["fl_adresse"]"
                        DISPLAY "Nombre de terrain : ["
                        fl_terrain_existant"]"
-                       DISPLAY "________________"
+                       DISPLAY "________________________________"
                     END-READ
            END-PERFORM
            CLOSE flieu.
@@ -676,7 +713,7 @@
                        DISPLAY "Type : ["ft_type "]"
                        DISPLAY "Prix : ["ft_prix "]"
                        DISPLAY "Couvert : ["ft_couvert "]"
-                       DISPLAY "________________"
+                       DISPLAY "________________________________"
                    END-READ
            END-PERFORM
            CLOSE fterrain.
