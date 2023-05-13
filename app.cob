@@ -53,6 +53,7 @@
              02 fu_mail PIC A(50).
              02 fu_mdp PIC 9(20).
              02 fu_role PIC 9(2).
+             02 fu_connecte PIC A.
        
        FD flieu.
           01 tamp_flieu.
@@ -103,6 +104,7 @@
               77 Wmail_valide PIC 9(1).
               77 Wreponse PIC A(1).
               77 Wancienrole PIC 9(2).
+              77 attempts PIC 9(1).
               01 W_freservation.
                 02 W_fr_cle.
                   03 terrain_saisi PIC 9(9).
@@ -117,6 +119,7 @@
                 02 Wmail PIC A(50).
                 02 Wmdp PIC 9(20).
                 02 Wrole PIC 9(2).
+                02 Wconnecte PIC A.
                01 W_flieu.
                 02 Wnumlieu PIC 9(9).
                 02 Wgerant PIC 9(9).
@@ -170,33 +173,133 @@
                     DISPLAY "________________________________________________________________"
                     DISPLAY "               Bienvenue dans le menu de FootBol "
                     DISPLAY "________________________________________________________________"
-                    DISPLAY "1. Affichage des utilisateurs"
-                    DISPLAY "2. Affichage des reservations"
-                    DISPLAY "3. Affichage des terrains    "
+                    DISPLAY "1. Connexion "
                     DISPLAY "0. Quitter"
-                    DISPLAY "Entrez votre choix (0-3):"
+                    DISPLAY "Entrez votre choix (0-1):"
                     ACCEPT choice
-
                     EVALUATE choice
                         WHEN '1'
                             PERFORM AFFICHAGE_UTILISATEUR
-                        WHEN '2'
-                            PERFORM AFFICHAGE_RESERVATION
-                        WHEN '3'
-                            PERFORM AFFICHAGE_TERRAIN
+                            PERFORM CONNEXION_UTILISATEUR
                         WHEN '0'
                             MOVE 'Y' TO exitmenu
                         WHEN OTHER
                             DISPLAY "Choix invalide. Veuillez réessayer."
                     END-EVALUATE
                 END-PERFORM.
-                PERFORM AFFICHAGE_UTILISATEUR.
-                PERFORM AFFICHAGE_RESERVATION.
-                PERFORM AFFICHAGE_RESERVATION.
 
         STOP RUN.
-        
-        AJOUT_UTILISATEUR.
+
+       CONNEXION_UTILISATEUR.
+           OPEN I-O futilisateur
+           DISPLAY "Entrez votre email :"
+           ACCEPT Wmail
+           DISPLAY "Entrez votre mot de passe :"
+           ACCEPT Wmdp
+           SET Wtrouve TO 0
+           SET attempts TO 0.
+           PERFORM UNTIL Wtrouve = 1 OR attempts = 3
+               READ futilisateur RECORD KEY IS fu_mail
+               AT END 
+                   DISPLAY "Trop de tentatives. Programme terminé."
+                   CLOSE futilisateur
+                   STOP RUN
+               NOT AT END
+                   IF fu_mdp = Wmdp THEN
+                       SET Wtrouve TO 1
+                       EVALUATE fu_role
+                       WHEN 1
+                           DISPLAY "Bienvenue, vous êtes un inscrit simple"
+                           MOVE 'O' TO Wconnecte
+                           PERFORM MENU_UTILISATEUR
+                       WHEN 2
+                           DISPLAY "Bienvenue, vous êtes un gérant"
+                           MOVE 'O' TO Wconnecte
+                       WHEN 3
+                           DISPLAY "Bienvenue, vous êtes un administrateur"
+                           MOVE 'O' TO Wconnecte
+                       END-EVALUATE
+                   ELSE
+                       ADD 1 TO attempts
+                       IF attempts = 3 THEN
+                           DISPLAY "Trop de tentatives. Programme terminé."
+                           CLOSE futilisateur
+                           STOP RUN
+                       ELSE
+                           DISPLAY "Mot de passe ou mail incorrect. Essayez encore."
+                           ACCEPT Wmdp
+                           READ futilisateur NEXT RECORD
+                       END-IF
+                   END-IF
+               END-READ
+           END-PERFORM
+           CLOSE futilisateur.
+
+       MENU_UTILISATEUR.
+                PERFORM UNTIL exitmenu = 'U'
+                    DISPLAY "________________________________________________________________"
+                    DISPLAY "         Bienvenue dans le menu utilisateur de FootBol "
+                    DISPLAY "________________________________________________________________"
+                    DISPLAY "1. Affichage des utilisateurs"
+                    DISPLAY "2. Ajout des utilisateurs"
+                    DISPLAY "3. Modifier un utilisateur   "
+                    DISPLAY "4. Modifier un role utilisateur   "
+                    DISPLAY "5. Supprimer un utilisateur   "
+                    DISPLAY "0. Quitter"
+                    DISPLAY "Entrez votre choix (0-5):"
+                    ACCEPT choice
+
+                    EVALUATE choice
+                        WHEN '1'
+                            PERFORM AFFICHAGE_UTILISATEUR
+                        WHEN '2'
+                            PERFORM AJOUT_UTILISATEUR
+                        WHEN '3'
+                            PERFORM MODIF_UTILISATEUR
+                        WHEN '4'
+                            PERFORM MODIF_DROIT
+                        WHEN '5'
+                            PERFORM SUPPRIMER_UTILISATEUR
+                        WHEN '0'
+                            MOVE 'U' TO exitmenu
+                        WHEN OTHER
+                            DISPLAY "Choix invalide. Veuillez réessayer."
+                    END-EVALUATE
+                END-PERFORM.
+
+        MENU_RESERVATION.
+            PERFORM UNTIL exitmenu = 'R'
+                DISPLAY "________________________________________________________________"
+                DISPLAY "         Bienvenue dans le menu reservation de FootBol "
+                DISPLAY "________________________________________________________________"
+                DISPLAY "1. Affichage des reservations"
+                DISPLAY "2. Ajout des reservations"
+                DISPLAY "3. Modifier une reservations   "
+                DISPLAY "4. Supprimer une reservations  "
+                DISPLAY "5. Supprimer une reservations   "
+                DISPLAY "0. Quitter"
+                DISPLAY "Entrez votre choix (0-5):"
+                ACCEPT choice
+
+                EVALUATE choice
+                    WHEN '1'
+                        PERFORM AFFICHAGE_RESERVATION
+                    WHEN '2'
+                        PERFORM AJOUT_RESERVATION
+                    WHEN '3'
+                        PERFORM MODIFIER_RESERVATION
+                    WHEN '4'
+                        PERFORM SUPPRIMER_RESERVATION
+                    WHEN '5'
+                        PERFORM SUPPRIMER_RESERVATION
+                    WHEN '0'
+                        MOVE 'R' TO exitmenu
+                    WHEN OTHER
+                        DISPLAY "Choix invalide. Veuillez réessayer."
+                END-EVALUATE
+            END-PERFORM. 
+
+       AJOUT_UTILISATEUR.
            OPEN I-O futilisateur
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
                    DISPLAY "Numero : "
