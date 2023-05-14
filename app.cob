@@ -363,6 +363,7 @@
                         WHEN '2'
                             PERFORM AJOUT_UTILISATEUR
                         WHEN '3'
+                            PERFORM AFFICHAGE_UTILISATEUR
                             PERFORM MODIF_UTILISATEUR
                         WHEN '4'
                             PERFORM MODIF_DROIT
@@ -399,6 +400,7 @@
                         WHEN '2'
                             PERFORM AJOUT_RESERVATION
                         WHEN '3'
+                            PERFORM AFFICHAGE_RESERVATION
                             PERFORM MODIFIER_RESERVATION
                         WHEN '4'
                             PERFORM RECHERCHER_RESERVATION
@@ -788,6 +790,7 @@
         SUPPRIMER_RESERVATION.
            DISPLAY "Supprimer une réservation"
            DISPLAY "________________________________"
+           MOVE 0 TO Wtrouve
            open I-O freservation
            DISPLAY "Entrez le numéro de terrain :"
                ACCEPT terrain_saisi
@@ -842,37 +845,76 @@
                 INVALID KEY DISPLAY "Reservation introuvable"
                     MOVE 0 TO Wtrouve
                 NOT INVALID KEY MOVE 1 TO Wtrouve
-                    DISPLAY "Réservation trouvée :"
-                    DISPLAY "Nouveau matériel : (actuel: " fr_materiel ")"
-                    ACCEPT materiel
-                    OPEN I-O futilisateur
-                   PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
-                       DISPLAY "Nouvel Utilisateur : (actuel: " fr_numutilisateur ")"
-                       ACCEPT id_utilisateur
-                       MOVE id_utilisateur TO fu_numutilisateur
-                       READ futilisateur
-                       INVALID KEY  DISPLAY "Utilisateur introuvable"
-                                    MOVE 0 TO Wtrouve
-                       NOT INVALID KEY MOVE 1 TO Wtrouve
-                            CLOSE futilisateur
-                       END-READ
-                   END-PERFORM
-                    
-                    
+                    DISPLAY global_id_user
+                    DISPLAY "------"
+                    DISPLAY fr_numutilisateur
+                    DISPLAY global_role_user
+                    IF fr_numutilisateur = global_id_user and global_role_user = 1
+                        DISPLAY "Réservation trouvée :"
+                        DISPLAY "Nouveau matériel : (actuel: " fr_materiel ")"
+                        ACCEPT materiel
+                        OPEN I-O futilisateur
+                       PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+                           DISPLAY "Nouvel Utilisateur : (actuel: " fr_numutilisateur ")"
+                           ACCEPT id_utilisateur
+                           MOVE id_utilisateur TO fu_numutilisateur
+                           READ futilisateur
+                           INVALID KEY  DISPLAY "Utilisateur introuvable"
+                                        MOVE 0 TO Wtrouve
+                           NOT INVALID KEY MOVE 1 TO Wtrouve
+                                CLOSE futilisateur
+                           END-READ
+                       END-PERFORM
+                        
+                        
 
-                    MOVE id_utilisateur TO fr_numutilisateur
-                    MOVE terrain_saisi TO fr_numterrain
-                    MOVE date_saisie TO fr_date
-                    MOVE heure_saisie TO fr_heure
-                    MOVE materiel TO fr_materiel
-                    DISPLAY fr_materiel
+                        MOVE id_utilisateur TO fr_numutilisateur
+                        MOVE terrain_saisi TO fr_numterrain
+                        MOVE date_saisie TO fr_date
+                        MOVE heure_saisie TO fr_heure
+                        MOVE materiel TO fr_materiel
+                        DISPLAY fr_materiel
 
-                    REWRITE tamp_freservation FROM W_freservation
-                    IF cr_freservation = "00"
-                        DISPLAY "Réservation modifiée avec succès."
-                    ELSE
-                        DISPLAY "Erreur lors de la modification de la réservation."
-                    END-IF
+                        REWRITE tamp_freservation FROM W_freservation
+                        IF cr_freservation = "00"
+                            DISPLAY "Réservation modifiée avec succès."
+                        ELSE
+                            DISPLAY "Erreur lors de la modification de la réservation."
+                        END-IF
+                    ELSE IF global_role_user <> 1
+                        DISPLAY "Réservation trouvée :"
+                        DISPLAY "Nouveau matériel : (actuel: " fr_materiel ")"
+                        ACCEPT materiel
+                        OPEN I-O futilisateur
+                       PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+                           DISPLAY "Nouvel Utilisateur : (actuel: " fr_numutilisateur ")"
+                           ACCEPT id_utilisateur
+                           MOVE id_utilisateur TO fu_numutilisateur
+                           READ futilisateur
+                           INVALID KEY  DISPLAY "Utilisateur introuvable"
+                                        MOVE 0 TO Wtrouve
+                           NOT INVALID KEY MOVE 1 TO Wtrouve
+                                CLOSE futilisateur
+                           END-READ
+                       END-PERFORM
+                        
+                        
+
+                        MOVE id_utilisateur TO fr_numutilisateur
+                        MOVE terrain_saisi TO fr_numterrain
+                        MOVE date_saisie TO fr_date
+                        MOVE heure_saisie TO fr_heure
+                        MOVE materiel TO fr_materiel
+                        DISPLAY fr_materiel
+
+                        REWRITE tamp_freservation FROM W_freservation
+                        IF cr_freservation = "00"
+                            DISPLAY "Réservation modifiée avec succès."
+                        ELSE
+                            DISPLAY "Erreur lors de la modification de la réservation."
+                        END-IF
+                    ELSE 
+                       DISPLAY "Aucunes réservations."         
                 END-READ
             END-PERFORM
 
