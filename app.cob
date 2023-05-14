@@ -407,7 +407,11 @@
                         WHEN '5'
                             PERFORM SUPPRIMER_RESERVATION
                         WHEN '0'
+                            IF global_role_user = 2
                             PERFORM MENU_GERANT
+                            ELSE IF global_role_user = 3
+                            PERFORM MENU_ADMIN
+                            END-IF
                         WHEN OTHER
                             DISPLAY "Choix invalide. Veuillez réessayer."
                     END-EVALUATE
@@ -436,7 +440,11 @@
                         WHEN '4'
                             PERFORM SUPPRIMER_TERRAIN
                         WHEN '0'
+                            IF global_role_user = 2
                             PERFORM MENU_GERANT
+                            ELSE IF global_role_user = 3
+                            PERFORM MENU_ADMIN
+                            END-IF
                         WHEN OTHER
                             DISPLAY "Choix invalide. Veuillez réessayer."
                     END-EVALUATE
@@ -522,6 +530,12 @@
            DISPLAY "Mdp : "
            ACCEPT Wmdp
            MOVE 'N' TO Wconnecte 
+           MOVE Wprenom to fu_prenom
+           MOVE Wnom to fu_nom
+           MOVE Wmail TO fu_mail
+           MOVE Wrole to fu_role
+           MOVE Wmdp TO fu_mdp
+
            MOVE W_futilisateur to tamp_futilisateur
            WRITE tamp_futilisateur
            IF cr_futilisateur = "00" THEN
@@ -1025,23 +1039,24 @@
            open I-O flieu
            display "Suppression d'un lieu"
            accept Wnumlieu
+           MOVE Wnumlieu TO fl_numlieu
+           MOVE 0 TO Wtrouve
            perform with test after until Wtrouve = 1
                read flieu
-                   at end move 1 to Wtrouve
-                   not at end
-                       if fl_numlieu = Wnumlieu
-                           display "Lieu trouvé"
-               display fl_gerant " " fl_adresse " " fl_terrain_existant
-               display "Confirmer suppression lieu ? (O/N)"
-                           accept Wreponse
-                           if Wreponse = "O" or Wreponse = "o"
-                               delete flieu
-                               display "Lieu supprimé"
-                           else
-                               display "Suppression annulée"
-                           end-if
-                           move 1 to Wtrouve
+                   INVALID KEY move 1 to Wtrouve
+                        display "Lieu introuvable"
+                   NOT INVALID KEY
+                       display "Lieu trouvé"
+                       display fl_gerant " " fl_adresse " " fl_terrain_existant
+                       display "Confirmer suppression lieu ? (O/N)"
+                       accept Wreponse
+                       if Wreponse = "O" or Wreponse = "o"
+                           delete flieu
+                           display "Lieu supprimé"
+                       else
+                           display "Suppression annulée"
                        end-if
+                       move 1 to Wtrouve
                end-read
            end-perform
            close flieu.
@@ -1170,25 +1185,22 @@
            display "Suppression d'un terrain"
            DISPLAY "Numéro de terrain : "
            accept Wnumterrain
-           DISPLAY "Numéro de lieu : "
-           accept WnumlieuT
+           MOVE 0 TO Wtrouve
            perform with test after until Wtrouve = 1
                read fterrain
-                   at end move 1 to Wtrouve
-                   not at end
-                       if ft_numterrain = Wnumterrain and ft_numlieuT =
-                       WnumlieuT
-                           display "Terrain trouvé"
-               display "Confirmer suppression terrain ? (O/N)"
-                           accept Wreponse
-                           if Wreponse = "O" or Wreponse = "o"
-                               delete fterrain
-                               display "Terrain supprimé"
-                           else
-                               display "Suppression annulée"
-                           end-if
-                           move 1 to Wtrouve
+                    INVALID KEY move 1 to Wtrouve
+                        display "Terrain incorrect"
+                    NOT INVALID KEY         
+                        display "Terrain trouvé"
+                        display "Confirmer suppression terrain ? (O/N)"
+                        accept Wreponse
+                        if Wreponse = "O" or Wreponse = "o"
+                           delete fterrain
+                           display "Terrain supprimé"
+                       else
+                           display "Suppression annulée"
                        end-if
+                       move 1 to Wtrouve
                end-read
            end-perform
            close fterrain.
