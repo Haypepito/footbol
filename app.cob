@@ -17,7 +17,7 @@
            ACCESS MODE IS DYNAMIC
            RECORD KEY IS fl_numlieu
            ALTERNATE RECORD KEY IS fl_adresse WITH DUPLICATES
-           ALTERNATE RECORD KEY IS fl_gerant WITH DUPLICATES
+           ALTERNATE RECORD KEY IS fl_gerant
            FILE STATUS IS cr_flieu.
        
            SELECT freservation ASSIGN TO "reservations.dat"
@@ -100,6 +100,7 @@
               77 cr_freservation PIC 9(2).
               77 Wtrouve PIC 9(1).
               77 Wfin PIC 9(1).
+              77 Wfinfin PIC 9(1).
               77 Wmail_valide PIC 9(1).
               77 Wreponse PIC A(1).
               77 attempts PIC 9(1).
@@ -396,6 +397,9 @@
 
                     EVALUATE choice
                         WHEN '1'
+                            IF global_role_user = 2
+                            PERFORM AFFICHAGE_RESERVATION_GERANT
+                            ELSE
                             PERFORM AFFICHAGE_RESERVATION
                         WHEN '2'
                             PERFORM AJOUT_RESERVATION
@@ -767,6 +771,57 @@
                     END-READ
            END-PERFORM
            CLOSE freservation.
+
+        AFFICHAGE_RESERVATION_GERANT.
+           OPEN INPUT flieu
+           MOVE global_id_user TO fl_gerant
+           READ flieu
+           AT END DISPLAY "Gérant au chomage"
+           NOT AT END 
+                MOVE fl_numlieu TO Wnumlieu
+                OPEN INPUT fterrain
+                MOVE Wnumlieu TO ft_numlieuT
+                MOVE 1 TO Wfin
+                START fterrain, KEY IS = ft_numlieuT
+                INVALID KEY DISPLAY "Lieu sans terrain"
+                NOT INVALID KEY
+                    DISPLAY " "
+                    DISPLAY "________________________________"
+                    DISPLAY "Adresse du lieu : "fl_adresse
+                    DISPLAY "Identifiant du lieu : " ft_numlieuT
+                    DISPLAY "________________________________"
+                    DISPLAY " "
+                    PERFORM WITH TEST AFTER UNTIL Wfin = 0
+                        READ fterrain NEXT 
+                        AT END MOVE 0 TO Wfin
+                        NOT AT END
+                            IF ft_numlieuT = fl_numlieu
+                                MOVE 1 TO Wfinfin
+                                OPEN INPUT freservation
+                                PERFORM WITH TEST AFTER UNTIL Wfinfin = 0
+                                    READ freservation NEXT
+                                    AT END DISPLAY " "
+                                        MOVE 0 TO Wfinfin
+                                    NOT AT END 
+                                        IF ft_numterrain = fr_numterrain
+                                           DISPLAY "Numéro : ["fr_numterrain"]"
+                                           DISPLAY "Num Utilisateur : ["fr_numutilisateur"]"
+                                           DISPLAY "Date : ["fr_date"]"
+                                           DISPLAY "Crénaux : ["fr_heure"]"
+                                           DISPLAY "Matériel : ["fr_materiel"]"
+                                           DISPLAY "________________________________"
+                                        END-IF
+                                    END-READ
+                                END-PERFORM
+                                CLOSE freservation
+                            END-IF
+                        END-READ
+                    END-PERFORM
+                END-START
+           END-READ
+           CLOSE fterrain
+           CLOSE flieu. 
+        
 
         RECHERCHER_RESERVATION.
            OPEN INPUT freservation 
