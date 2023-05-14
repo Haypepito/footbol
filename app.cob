@@ -74,7 +74,6 @@
        FD fterrain.
           01 tamp_fterrain.
              02 ft_numterrain PIC 9(9).
-             02 ft_lieu PIC A(50).
              02 ft_numlieuT PIC 9(9).
              02 ft_longueur PIC 9(4).
              02 ft_largeur PIC 9(4).
@@ -246,14 +245,14 @@
            
            CLOSE futilisateur.
        MENU_AMATEUR.
-                PERFORM UNTIL exitmenu = 'U'
+                PERFORM UNTIL exitmenu = 'A'
                     DISPLAY "________________________________________________________________"
                     DISPLAY "         Bienvenue dans le menu amateur de FootBol "
                     DISPLAY "________________________________________________________________"
-                    DISPLAY "1. Modifier un utilisateur   "
+                    DISPLAY "1. Modifier mon compte   "
                     DISPLAY "2. Ajout d'une réservation   "
                     DISPLAY "3. Modifier une réservation   "
-                    DISPLAY "4. Rerchercher une réservation"
+                    DISPLAY "4. Rerchercher mes réservations "
                     DISPLAY "5. Se déconnecter "
                     DISPLAY "0. Quitter"
                     DISPLAY "Entrez votre choix (0-5):"
@@ -273,14 +272,14 @@
                             PERFORM DECONNECTER_UTILISATEUR
                             PERFORM CONNEXION_UTILISATEUR
                         WHEN '0'
-                            MOVE 'U' TO exitmenu
+                            MOVE 'A' TO exitmenu
                         WHEN OTHER
                             DISPLAY "Choix invalide. Veuillez réessayer."
                     END-EVALUATE
                 END-PERFORM.
 
         MENU_GERANT.
-            PERFORM UNTIL exitmenu = 'R'
+            PERFORM UNTIL exitmenu = 'G'
                 DISPLAY "________________________________________________________________"
                 DISPLAY "         Bienvenue dans le menu Gérant de FootBol "
                 DISPLAY "________________________________________________________________"
@@ -304,14 +303,14 @@
                         PERFORM DECONNECTER_UTILISATEUR
                         PERFORM CONNEXION_UTILISATEUR
                     WHEN '0'
-                        MOVE 'R' TO exitmenu
+                        MOVE 'G' TO exitmenu
                     WHEN OTHER
                         DISPLAY "Choix invalide. Veuillez réessayer."
                 END-EVALUATE
             END-PERFORM. 
 
         MENU_ADMIN.
-            PERFORM UNTIL exitmenu = 'R'
+            PERFORM UNTIL exitmenu = 'A'
                 DISPLAY "________________________________________________________________"
                 DISPLAY "       Bienvenue dans le menu Administrateur de FootBol "
                 DISPLAY "________________________________________________________________"
@@ -338,7 +337,7 @@
                         PERFORM DECONNECTER_UTILISATEUR
                         PERFORM CONNEXION_UTILISATEUR
                     WHEN '0'
-                        MOVE 'R' TO exitmenu
+                        MOVE 'A' TO exitmenu
                     WHEN OTHER
                         DISPLAY "Choix invalide. Veuillez réessayer."
                 END-EVALUATE
@@ -381,7 +380,7 @@
                 END-PERFORM.
 
            MENU_RESERVATION.
-                PERFORM UNTIL exitmenu = 'U'
+                PERFORM UNTIL exitmenu = 'R'
                     DISPLAY "________________________________________________________________"
                     DISPLAY "       Bienvenue dans le menu reservation de FootBol "
                     DISPLAY "________________________________________________________________"
@@ -413,7 +412,7 @@
                 END-PERFORM.
 
            MENU_TERRAIN.
-                PERFORM UNTIL exitmenu = 'U'
+                PERFORM UNTIL exitmenu = 'T'
                     DISPLAY "________________________________________________________________"
                     DISPLAY "         Bienvenue dans le menu terrain de FootBol "
                     DISPLAY "________________________________________________________________"
@@ -442,7 +441,7 @@
                 END-PERFORM.
 
            MENU_LIEU.
-                PERFORM UNTIL exitmenu = 'U'
+                PERFORM UNTIL exitmenu = 'L'
                     DISPLAY "________________________________________________________________"
                     DISPLAY "         Bienvenue dans le menu lieu de FootBol "
                     DISPLAY "________________________________________________________________"
@@ -532,17 +531,20 @@
 
        MODIF_UTILISATEUR.
            OPEN I-O futilisateur
-           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
-               DISPLAY "Numéro de l'utilisateur à modifier : "
-               ACCEPT Wnumutilisateur
-               MOVE Wnumutilisateur TO fu_numutilisateur
-               READ futilisateur
-               INVALID KEY  DISPLAY "Utilisateur introuvable"
-                            MOVE 0 TO Wtrouve
-               NOT INVALID KEY MOVE 1 TO Wtrouve
-               END-READ
-           END-PERFORM
-    
+            IF global_role_user = 1 THEN
+               MOVE global_id_user TO fr_numutilisateur
+           ELSE
+               PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+                   DISPLAY "Numéro de l'utilisateur à modifier : "
+                   ACCEPT Wnumutilisateur
+                   MOVE Wnumutilisateur TO fu_numutilisateur
+                   READ futilisateur
+                   INVALID KEY  DISPLAY "Utilisateur introuvable"
+                                MOVE 0 TO Wtrouve
+                   NOT INVALID KEY MOVE 1 TO Wtrouve
+                   END-READ
+               END-PERFORM
+           END-IF
            IF Wtrouve = 1
                MOVE fu_role TO Wrole
                
@@ -663,7 +665,7 @@
             OPEN INPUT futilisateur
             MOVE 1 TO Wfin
             PERFORM WITH TEST AFTER UNTIL Wfin=0
-                    READ futilisateur
+                    READ futilisateur NEXT
                     AT END MOVE 0 TO Wfin
                     NOT AT END
                        DISPLAY "Numéro : ["fu_numutilisateur"]"
@@ -683,8 +685,19 @@
            DISPLAY "________________________________"
            OPEN I-O freservation
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 0 
-               DISPLAY "Entrez le numéro de terrain :"
-               ACCEPT terrain_saisi
+                OPEN I-O fterrain
+               PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+                       DISPLAY "Entrez le numéro de terrain :"
+                       ACCEPT terrain_saisi
+                       MOVE terrain_saisi TO ft_numterrain
+                       READ fterrain
+                       INVALID KEY  DISPLAY " "
+                                    MOVE 1 TO Wtrouve
+                                    DISPLAY "Terrain inexistant"
+                       NOT INVALID KEY DISPLAY "Terrain existant"
+                                       MOVE 0 TO Wtrouve
+                       END-READ
+               END-PERFORM
 
                DISPLAY "Entrez l'heure de la réservation :"
                ACCEPT heure_saisie
@@ -703,9 +716,13 @@
                END-READ 
            END-PERFORM
 
-           DISPLAY "Entrez l'id de l'utilisateur de la réservation :"
-           ACCEPT id_utilisateur
-           MOVE id_utilisateur TO fr_numutilisateur
+           IF global_role_user = 1 THEN
+               MOVE global_id_user TO fr_numutilisateur
+           ELSE
+               DISPLAY "Entrez l'id de l'utilisateur de la réservation :"
+               ACCEPT id_utilisateur
+               MOVE id_utilisateur TO fr_numutilisateur
+           END-IF
            DISPLAY "Location de matériel (Oui/Non) :"
            ACCEPT materiel
            MOVE materiel TO fr_materiel
@@ -737,11 +754,16 @@
 
         RECHERCHER_RESERVATION.
            OPEN INPUT freservation 
-           DISPLAY "Rechercher une réservation"
-           DISPLAY "________________________________" 
-           DISPLAY "Entrez l'id de l'utilisateur de la réservation :"
-           ACCEPT id_utilisateur
-           MOVE id_utilisateur TO fr_numutilisateur
+           IF global_role_user = 1 THEN
+               MOVE global_id_user TO fr_numutilisateur
+               MOVE global_id_user TO id_utilisateur
+           ELSE
+               DISPLAY "Rechercher une réservation"
+               DISPLAY "________________________________"
+               DISPLAY "Entrez l'id de l'utilisateur de la réservation :"
+               ACCEPT id_utilisateur
+               MOVE id_utilisateur TO fr_numutilisateur
+           END-IF
            MOVE 1 TO Wfin
            START freservation KEY IS = fr_numutilisateur
            INVALID KEY DISPLAY "Aucunes reservations"
@@ -750,12 +772,14 @@
                         READ freservation NEXT
                         AT END MOVE 0 TO Wfin
                         NOT AT  END 
+                           IF fr_numutilisateur = id_utilisateur
                            DISPLAY "Numéro : ["fr_numterrain"]"
                            DISPLAY "Num Utilisateur : ["fr_numutilisateur"]"
                            DISPLAY "Date : ["fr_date"]"
                            DISPLAY "Crénaux : ["fr_heure"]"
                            DISPLAY "Matériel : ["fr_materiel"]"
                            DISPLAY "________________________________"
+                           END-IF
                         END-READ
                     END-PERFORM
            END-START
@@ -801,6 +825,7 @@
             DISPLAY "Modifier une réservation"
             DISPLAY "________________________________"
             OPEN I-O freservation
+            MOVE 0 TO Wtrouve
             PERFORM UNTIL Wtrouve = 1
                 DISPLAY "Entrez le numéro de terrain :"
                 ACCEPT terrain_saisi
@@ -810,11 +835,11 @@
 
                 DISPLAY "Entrez la date de la réservation :"
                 ACCEPT date_saisie
-                MOVE id_utilisateur TO fr_numutilisateur
+                MOVE heure_saisie TO fr_heure
                 MOVE terrain_saisi TO fr_numterrain
                 MOVE date_saisie TO fr_date
                 READ freservation
-                INVALID KEY DISPLAY "Utilisateur introuvable"
+                INVALID KEY DISPLAY "Reservation introuvable"
                     MOVE 0 TO Wtrouve
                 NOT INVALID KEY MOVE 1 TO Wtrouve
                     DISPLAY "Réservation trouvée :"
@@ -1017,6 +1042,12 @@
            ACCEPT Wprix
            DISPLAY "Couvert (O/N) : "
            ACCEPT Wcouvert
+
+           MOVE Wlongueur to ft_longueur
+           MOVE Wlargeur to ft_largeur
+           MOVE Wtype to ft_type
+           MOVE Wprix to ft_prix
+           MOVE Wcouvert to ft_couvert 
        
            MOVE W_fterrain to tamp_fterrain
            WRITE tamp_fterrain
