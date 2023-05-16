@@ -1185,6 +1185,46 @@
            END-PERFORM
            CLOSE fterrain.
 
+       AFFICHAGE_TERRAIN_GERANT.
+       OPEN INPUT flieu
+           MOVE global_id_user TO fl_gerant
+           READ flieu
+           AT END DISPLAY "Gérant au chomage"
+           NOT AT END 
+                MOVE fl_numlieu TO Wnumlieu
+                OPEN INPUT fterrain
+                MOVE Wnumlieu TO ft_numlieuT
+                MOVE 1 TO Wfin
+                START fterrain, KEY IS = ft_numlieuT
+                INVALID KEY DISPLAY "Lieu sans terrain"
+                NOT INVALID KEY
+                    DISPLAY " "
+                    DISPLAY "________________________________"
+                    DISPLAY "Adresse du lieu : "fl_adresse
+                    DISPLAY "Identifiant du lieu : " ft_numlieuT
+                    DISPLAY "________________________________"
+                    DISPLAY " "
+                    PERFORM WITH TEST AFTER UNTIL Wfin = 0
+                        READ fterrain NEXT 
+                        AT END MOVE 0 TO Wfin
+                        NOT AT END
+                            IF ft_numlieuT = fl_numlieu
+                               DISPLAY "Numéro : ["ft_numterrain"]"
+                               DISPLAY "Lieu : ["ft_numlieuT"]"
+                               DISPLAY "Longueur : ["ft_longueur"]"
+                               DISPLAY "Largeur : ["ft_largeur"]"
+                               DISPLAY "Type : ["ft_type "]"
+                               DISPLAY "Prix : ["ft_prix "]"
+                               DISPLAY "Couvert : ["ft_couvert "]"
+                               DISPLAY "________________________________"   
+                            END-IF
+                        END-READ
+                    END-PERFORM
+                END-START
+           END-READ
+           CLOSE fterrain
+           CLOSE flieu. 
+
        MODIFIER_TERRAIN.
            OPEN I-O fterrain
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
