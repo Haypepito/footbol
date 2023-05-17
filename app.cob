@@ -25,6 +25,7 @@
            ACCESS MODE IS DYNAMIC
            RECORD KEY IS fr_cleres
            ALTERNATE RECORD KEY IS fr_numutilisateur WITH DUPLICATES
+           ALTERNATE RECORD KEY IS fr_numterrain WITH DUPLICATES
            FILE STATUS IS cr_freservation.
        
            SELECT fterrain ASSIGN TO "terrains.dat"
@@ -274,6 +275,7 @@
                             PERFORM CONNEXION_UTILISATEUR
                         WHEN '0'
                             MOVE 'A' TO exitmenu
+                            STOP RUN
                         WHEN OTHER
                             DISPLAY "Choix invalide. Veuillez réessayer."
                     END-EVALUATE
@@ -305,6 +307,7 @@
                         PERFORM CONNEXION_UTILISATEUR
                     WHEN '0'
                         MOVE 'G' TO exitmenu
+                        STOP RUN
                     WHEN OTHER
                         DISPLAY "Choix invalide. Veuillez réessayer."
                 END-EVALUATE
@@ -339,6 +342,7 @@
                         PERFORM CONNEXION_UTILISATEUR
                     WHEN '0'
                         MOVE 'A' TO exitmenu
+                        STOP RUN
                     WHEN OTHER
                         DISPLAY "Choix invalide. Veuillez réessayer."
                 END-EVALUATE
@@ -436,6 +440,9 @@
 
                     EVALUATE choice
                         WHEN '1'
+                            IF global_role_user = 2
+                            PERFORM AFFICHAGE_TERRAIN_GERANT
+                            ELSE
                             PERFORM AFFICHAGE_TERRAIN
                         WHEN '2'
                             PERFORM AJOUT_TERRAIN
@@ -517,7 +524,7 @@
            ACCEPT Wmail
 
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
-           READ futilisateur
+           READ futilisateur NEXT
                AT END MOVE 0 TO Wtrouve
                NOT AT END
                    IF fu_mail = Wmail THEN
@@ -661,7 +668,7 @@
        display "Prénom de l'utilisateur :"
        accept Wprenom
        perform with test after until Wtrouve = 1
-           read futilisateur
+           read futilisateur NEXT
                at end move 1 to Wtrouve
                not at end
                    if fu_nom = Wnom and fu_prenom = Wprenom
@@ -670,6 +677,24 @@
            display "Confirmer suppression utilisateur ? (O/N)"
                        accept Wreponse
                        if Wreponse = "O" or Wreponse = "o"
+                           open I-O freservation
+                           MOVE 0 TO Wfin
+                           MOVE fu_numutilisateur TO fr_numutilisateur
+                           START freservation,KEY IS = fr_numutilisateur
+                           INVALID KEY DISPLAY "Pas de réservation"
+                           NOT INVALID KEY
+                               perform with test after until Wfin = 1
+                                   read freservation NEXT
+                                       at end move 1 to Wfin
+                                       not at end
+                                           IF fr_numutilisateur = fu_numutilisateur
+                                               delete freservation
+                                               display "Réservation supprimée"
+                                           end-if
+                                   end-read
+                               end-perform
+                            END-START
+                           close freservation
                            delete futilisateur
                            display "Utilisateur supprimé"
                        else
@@ -759,7 +784,7 @@
            OPEN INPUT freservation
            MOVE 1 TO Wfin
            PERFORM WITH TEST AFTER UNTIL Wfin=0
-                    READ freservation
+                    READ freservation NEXT
                     AT END MOVE 0 TO Wfin
                     NOT AT END
                        DISPLAY "Numéro : ["fr_numterrain"]"
@@ -772,10 +797,10 @@
            END-PERFORM
            CLOSE freservation.
 
-        AFFICHAGE_RESERVATION_GERANT.
+           AFFICHAGE_RESERVATION_GERANT.
            OPEN INPUT flieu
            MOVE global_id_user TO fl_gerant
-           READ flieu
+           READ flieu NEXT
            AT END DISPLAY "Gérant au chomage"
            NOT AT END 
                 MOVE fl_numlieu TO Wnumlieu
@@ -798,21 +823,26 @@
                             IF ft_numlieuT = fl_numlieu
                                 MOVE 1 TO Wfinfin
                                 OPEN INPUT freservation
-                                PERFORM WITH TEST AFTER UNTIL Wfinfin = 0
-                                    READ freservation NEXT
-                                    AT END DISPLAY " "
-                                        MOVE 0 TO Wfinfin
-                                    NOT AT END 
-                                        IF ft_numterrain = fr_numterrain
-                                           DISPLAY "Numéro : ["fr_numterrain"]"
-                                           DISPLAY "Num Utilisateur : ["fr_numutilisateur"]"
-                                           DISPLAY "Date : ["fr_date"]"
-                                           DISPLAY "Crénaux : ["fr_heure"]"
-                                           DISPLAY "Matériel : ["fr_materiel"]"
-                                           DISPLAY "________________________________"
-                                        END-IF
-                                    END-READ
-                                END-PERFORM
+                                MOVE ft_numterrain to fr_numterrain
+                                START freservation, KEY IS = fr_numterrain
+                                INVALID KEY DISPLAY 'Pas de réservation sur le terrain : ' ft_numterrain
+                                NOT INVALID KEY
+                                    PERFORM WITH TEST AFTER UNTIL Wfinfin = 0
+                                        READ freservation NEXT
+                                        AT END DISPLAY " "
+                                            MOVE 0 TO Wfinfin
+                                        NOT AT END 
+                                            IF ft_numterrain = fr_numterrain
+                                               DISPLAY "Numéro : ["fr_numterrain"]"
+                                               DISPLAY "Num Utilisateur : ["fr_numutilisateur"]"
+                                               DISPLAY "Date : ["fr_date"]"
+                                               DISPLAY "Crénaux : ["fr_heure"]"
+                                               DISPLAY "Matériel : ["fr_materiel"]"
+                                               DISPLAY "________________________________"
+                                            END-IF
+                                        END-READ
+                                    END-PERFORM
+                                END-START
                                 CLOSE freservation
                             END-IF
                         END-READ
@@ -871,7 +901,7 @@
                ACCEPT date_saisie
 
            perform with test after until Wtrouve = 1
-               read freservation
+               read freservation NEXT
                    at end move 1 to Wtrouve
                    not at end
                        if fr_heure = heure_saisie and
@@ -993,19 +1023,21 @@
        
        AJOUT_LIEU.
            OPEN I-O flieu
+           MOVE 1 TO Wtrouve
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
                    DISPLAY "Numero du lieu: "
                    ACCEPT Wnumlieu
                    MOVE Wnumlieu TO fl_numlieu
                    READ flieu
                    INVALID KEY  DISPLAY " "
+                                MOVE Wnumlieu TO fl_numlieu
                                 MOVE 0 TO Wtrouve
                    NOT INVALID KEY DISPLAY "Numéro déjà utilisé"
-                                   MOVE 1 TO Wtrouve
                    END-READ
            END-PERFORM
 
-           OPEN I-O futilisateur
+           OPEN INPUT futilisateur
+           MOVE 0 TO Wtrouve
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
                DISPLAY "Numéro de l'utilisateur : "
                ACCEPT Wgerant
@@ -1013,8 +1045,9 @@
                READ futilisateur
                INVALID KEY  DISPLAY "Utilisateur introuvable"
                             MOVE 0 TO Wtrouve
-               NOT INVALID KEY MOVE 1 TO Wtrouve
-                           MOVE Wgerant TO fl_gerant
+               NOT INVALID KEY 
+                            MOVE Wgerant TO fl_gerant
+                            MOVE 1 TO Wtrouve         
                END-READ
            END-PERFORM
            CLOSE futilisateur
@@ -1024,17 +1057,25 @@
 
            DISPLAY "Nombre de terrain pour le lieu : "
            ACCEPT Wterrain_existant
+
+           MOVE Wadresse TO fl_adresse
+           MOVE Wterrain_existant TO fl_terrain_existant
+
+           MOVE W_flieu TO tamp_flieu
        
-           MOVE W_flieu to tamp_flieu
            WRITE tamp_flieu
            END-WRITE
+           IF cr_flieu = "00"
+               DISPLAY "Lieu ajoutée avec succès."
+           ELSE
+               DISPLAY "Erreur lors de l'ajout du lieu. Gérant appartenant déja à un lieu"   
            CLOSE flieu.
 
        AFFICHAGE_LIEU.
            OPEN INPUT flieu
            MOVE 1 TO Wfin
            PERFORM WITH TEST AFTER UNTIL Wfin=0
-                    READ flieu
+                    READ flieu NEXT
                     AT END MOVE 0 TO Wfin
                     NOT AT END
                        DISPLAY "Numéro : ["fl_numlieu"]"
@@ -1106,6 +1147,48 @@
                        display "Confirmer suppression lieu ? (O/N)"
                        accept Wreponse
                        if Wreponse = "O" or Wreponse = "o"
+                            OPEN I-O fterrain
+                            MOVE 0 TO Wfin
+                            MOVE fl_numlieu TO ft_numlieuT
+                            START fterrain,KEY IS = ft_numlieuT
+                            INVALID KEY DISPLAY "PAS DE TERRAINS"
+                            NOT INVALID KEY
+                                perform with test after until Wfin = 1
+                                   read fterrain NEXT
+                                    AT END move 1 to Wfin
+                                        display "Aucuns terrains associés"
+                                    NOT AT END         
+                                        display "Terrain trouvé"
+                                           OPEN I-O freservation
+                                                MOVE ft_numterrain to fr_numterrain
+                                                START freservation, KEY IS = fr_numterrain
+                                                INVALID KEY DISPLAY 'Pas de réservation sur le terrain : ' ft_numterrain
+                                                NOT INVALID KEY
+                                                    PERFORM WITH TEST AFTER UNTIL Wfinfin = 0
+                                                        READ freservation NEXT
+                                                        AT END DISPLAY " "
+                                                            MOVE 0 TO Wfinfin
+                                                        NOT AT END 
+                                                            IF ft_numterrain = fr_numterrain
+                                                               DISPLAY "Numéro : ["fr_numterrain"]"
+                                                               DISPLAY "Num Utilisateur : ["fr_numutilisateur"]"
+                                                               DISPLAY "Date : ["fr_date"]"
+                                                               DISPLAY "Crénaux : ["fr_heure"]"
+                                                               DISPLAY "Matériel : ["fr_materiel"]"
+                                                               DISPLAY "________________________________"
+                                                               delete freservation
+                                                            END-IF
+                                                        END-READ
+                                                    END-PERFORM
+                                                END-START
+                                                CLOSE freservation
+                                           delete fterrain
+                                           display "Terrain et reservation supprimés "
+                                       move 1 to Wtrouve
+                                   end-read
+                                END-PERFORM
+                            END-START
+                            close fterrain   
                            delete flieu
                            display "Lieu supprimé"
                        else
@@ -1118,18 +1201,17 @@
 
        AJOUT_TERRAIN.
            OPEN I-O fterrain
-           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
-                   DISPLAY "Numero du terrain :"
-                   ACCEPT Wnumterrain
-                   MOVE Wnumterrain TO ft_numterrain
-                   READ fterrain
-                   INVALID KEY  DISPLAY " "
-                                MOVE 0 TO Wtrouve
-                   NOT INVALID KEY DISPLAY "Numéro déjà utilisé"
-                                   MOVE 1 TO Wtrouve
-                   END-READ
-           END-PERFORM
-
+           IF global_role_user = 2
+           OPEN INPUT flieu
+           MOVE global_id_user TO fl_gerant
+           READ flieu NEXT
+           AT END DISPLAY "Gérant au chomage"
+           NOT AT END 
+                MOVE fl_numlieu TO WnumlieuT
+                MOVE WnumlieuT TO ft_numlieuT
+           END-READ
+           CLOSE flieu
+           ELSE
            OPEN I-O flieu
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
                DISPLAY "Numéro de lieu : "
@@ -1143,7 +1225,21 @@
                END-READ
            END-PERFORM
            CLOSE flieu
-    
+           END-IF
+     
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+                   DISPLAY "Numero du terrain :"
+                   ACCEPT Wnumterrain
+                   MOVE Wnumterrain TO ft_numterrain
+                   READ fterrain
+                   INVALID KEY  DISPLAY " "
+                                MOVE 0 TO Wtrouve
+                   NOT INVALID KEY DISPLAY "Numéro déjà utilisé"
+                                   MOVE 1 TO Wtrouve
+                   END-READ
+           END-PERFORM
+
+        
            DISPLAY "Longueur : "
            ACCEPT Wlongueur
            DISPLAY "Largeur : "
@@ -1166,11 +1262,12 @@
            END-WRITE
            CLOSE fterrain.
 
+
        AFFICHAGE_TERRAIN.
            OPEN INPUT fterrain
            MOVE 1 TO Wfin
            PERFORM WITH TEST AFTER UNTIL Wfin=0
-                   READ fterrain
+                   READ fterrain NEXT
                    AT END MOVE 0 TO Wfin
                    NOT AT END
                        DISPLAY "Numéro : ["ft_numterrain"]"
@@ -1188,7 +1285,7 @@
        AFFICHAGE_TERRAIN_GERANT.
        OPEN INPUT flieu
            MOVE global_id_user TO fl_gerant
-           READ flieu
+           READ flieu NEXT
            AT END DISPLAY "Gérant au chomage"
            NOT AT END 
                 MOVE fl_numlieu TO Wnumlieu
@@ -1196,7 +1293,7 @@
                 MOVE Wnumlieu TO ft_numlieuT
                 MOVE 1 TO Wfin
                 START fterrain, KEY IS = ft_numlieuT
-                INVALID KEY DISPLAY "Lieu sans terrain"
+                INVALID KEY DISPLAY "Le gérant est associé à un lieu sans terrain"
                 NOT INVALID KEY
                     DISPLAY " "
                     DISPLAY "________________________________"
@@ -1281,6 +1378,7 @@
            DISPLAY "Numéro de terrain : "
            accept Wnumterrain
            MOVE 0 TO Wtrouve
+           MOVE Wnumterrain TO ft_numterrain
            perform with test after until Wtrouve = 1
                read fterrain
                     INVALID KEY move 1 to Wtrouve
@@ -1290,8 +1388,31 @@
                         display "Confirmer suppression terrain ? (O/N)"
                         accept Wreponse
                         if Wreponse = "O" or Wreponse = "o"
+                           OPEN I-O freservation
+                                MOVE Wnumterrain to fr_numterrain
+                                START freservation, KEY IS = fr_numterrain
+                                INVALID KEY DISPLAY 'Pas de réservation sur le terrain : ' ft_numterrain
+                                NOT INVALID KEY
+                                    PERFORM WITH TEST AFTER UNTIL Wfinfin = 0
+                                        READ freservation NEXT
+                                        AT END DISPLAY " "
+                                            MOVE 0 TO Wfinfin
+                                        NOT AT END 
+                                            IF ft_numterrain = fr_numterrain
+                                               DISPLAY "Numéro : ["fr_numterrain"]"
+                                               DISPLAY "Num Utilisateur : ["fr_numutilisateur"]"
+                                               DISPLAY "Date : ["fr_date"]"
+                                               DISPLAY "Crénaux : ["fr_heure"]"
+                                               DISPLAY "Matériel : ["fr_materiel"]"
+                                               DISPLAY "________________________________"
+                                               delete freservation
+                                            END-IF
+                                        END-READ
+                                    END-PERFORM
+                                END-START
+                                CLOSE freservation
                            delete fterrain
-                           display "Terrain supprimé"
+                           display "Terrain et reservation supprimés "
                        else
                            display "Suppression annulée"
                        end-if
