@@ -16,7 +16,7 @@
            ORGANIZATION IS INDEXED
            ACCESS MODE IS DYNAMIC
            RECORD KEY IS fl_numlieu
-           ALTERNATE RECORD KEY IS fl_adresse WITH DUPLICATES
+           ALTERNATE RECORD KEY IS fl_adresse
            ALTERNATE RECORD KEY IS fl_gerant
            FILE STATUS IS cr_flieu.
        
@@ -253,9 +253,10 @@
                     DISPLAY "________________________________________________________________"
                     DISPLAY "1. Modifier mon compte   "
                     DISPLAY "2. Ajout d'une réservation   "
-                    DISPLAY "3. Modifier une réservation   "
-                    DISPLAY "4. Rerchercher mes réservations "
-                    DISPLAY "5. Se déconnecter "
+                    DISPLAY "2. Ajout d'une réservation (Recherche par type de terrain)"
+                    DISPLAY "4. Modifier une réservation   "
+                    DISPLAY "5. Rerchercher mes réservations "
+                    DISPLAY "6. Se déconnecter "
                     DISPLAY "0. Quitter"
                     DISPLAY "Entrez votre choix (0-5):"
                     ACCEPT choice
@@ -266,10 +267,12 @@
                         WHEN '2'
                             PERFORM AJOUT_RESERVATION
                         WHEN '3'
-                            PERFORM MODIFIER_RESERVATION
+                            PERFORM AJOUT_RESERVATION_LIEU_TYPE
                         WHEN '4'
-                            PERFORM RECHERCHER_RESERVATION    
+                            PERFORM MODIFIER_RESERVATION
                         WHEN '5'
+                            PERFORM RECHERCHER_RESERVATION   
+                        WHEN '6'
                             DISPLAY "Vous êtes bien déconnecté"
                             PERFORM DECONNECTER_UTILISATEUR
                             PERFORM CONNEXION_UTILISATEUR
@@ -394,7 +397,7 @@
                     DISPLAY "2. Ajout d'une réservation"
                     DISPLAY "3. Modifier une réservation   "
                     DISPLAY "4. Rerchercher une réservation"
-                    DISPLAY "5. Supprimer un utilisateur   "
+                    DISPLAY "5. Supprimer une réservation   "
                     DISPLAY "0. Retour"
                     DISPLAY "Entrez votre choix (0-5):"
                     ACCEPT choice
@@ -728,6 +731,49 @@
        AJOUT_RESERVATION.
            DISPLAY "Ajouter une réservation"
            DISPLAY "________________________________"
+           MOVE 0 TO Wtrouve
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+               DISPLAY "Veuillez saisir le lieu de votre réservation :"
+               OPEN INPUT flieu
+               ACCEPT Wadresse
+               MOVE Wadresse TO fl_adresse
+               READ flieu RECORD KEY IS fl_adresse
+                   INVALID KEY DISPLAY "Aucunes correspondances avec nos centres."
+                                fl_adresse
+                   NOT INVALID KEY
+                        DISPLAY "Lieu existant"
+                        OPEN INPUT fterrain
+                        MOVE fl_numlieu TO ft_numlieuT
+                        MOVE 1 TO Wfin
+                        START fterrain, KEY IS = ft_numlieuT
+                        INVALID KEY DISPLAY "Ce lieu ne possède plus de terrain"
+                        NOT INVALID KEY
+                            DISPLAY " "
+                            DISPLAY "________________________________"
+                            DISPLAY "Adresse du lieu : "fl_adresse
+                            DISPLAY "Identifiant du lieu : " ft_numlieuT
+                            DISPLAY "________________________________"
+                            DISPLAY " "
+                            PERFORM WITH TEST AFTER UNTIL Wfin = 0
+                                READ fterrain NEXT 
+                                AT END MOVE 0 TO Wfin
+                                NOT AT END
+                                    IF ft_numlieuT = fl_numlieu
+                                       DISPLAY "Numéro de terrain : ["ft_numterrain"]"
+                                       DISPLAY "Lieu : ["ft_numlieuT"]"
+                                       DISPLAY "Longueur : ["ft_longueur"]"
+                                       DISPLAY "Largeur : ["ft_largeur"]"
+                                       DISPLAY "Type : ["ft_type "]"
+                                       DISPLAY "Prix : ["ft_prix "]"
+                                       DISPLAY "Couvert : ["ft_couvert "]"
+                                       DISPLAY "________________________________"   
+                                    END-IF
+                                END-READ
+                            END-PERFORM
+                            MOVE 1 TO Wtrouve  
+                        END-START
+                END-READ
+            END-PERFORM
            OPEN I-O freservation
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 0 
                 OPEN I-O fterrain
@@ -756,8 +802,8 @@
                READ freservation
                    INVALID KEY  DISPLAY " "
                                     MOVE 0 TO Wtrouve
-                       NOT INVALID KEY DISPLAY "La réservation existe déjà."
-                                       MOVE 1 TO Wtrouve
+                   NOT INVALID KEY DISPLAY "La réservation existe déjà, Essayez un autre Crénaux"
+                                    MOVE 1 TO Wtrouve
                END-READ 
            END-PERFORM
 
@@ -776,6 +822,109 @@
                DISPLAY "Réservation ajoutée avec succès."
            ELSE
                DISPLAY "Erreur lors de l'ajout de la réservation."   
+           CLOSE fterrain
+           CLOSE flieu 
+           CLOSE freservation.
+
+        AJOUT_RESERVATION_LIEU_TYPE.
+           DISPLAY "Ajouter une réservation"
+           DISPLAY "________________________________"
+           MOVE 0 TO Wtrouve
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+               DISPLAY "Veuillez saisir le lieu de votre réservation :"
+               OPEN INPUT flieu
+               ACCEPT Wadresse
+               MOVE Wadresse TO fl_adresse
+               READ flieu RECORD KEY IS fl_adresse
+                   INVALID KEY DISPLAY "Aucunes correspondances avec nos centres."
+                                fl_adresse
+                   NOT INVALID KEY
+                        DISPLAY "Lieu existant"
+                        OPEN INPUT fterrain
+                        MOVE fl_numlieu TO ft_numlieuT
+                        MOVE 1 TO Wfin
+                        START fterrain, KEY IS = ft_numlieuT
+                        INVALID KEY DISPLAY "Ce lieu ne possède plus de terrain"
+                        NOT INVALID KEY
+                            DISPLAY "Veuillez saisir le type de terrain (Falin/Gazon/Synthétique) : "
+                            ACCEPT Wtype
+                            MOVE Wtype TO ft_type
+                            DISPLAY " "
+                            DISPLAY "________________________________"
+                            DISPLAY "Adresse du lieu : "fl_adresse
+                            DISPLAY "Identifiant du lieu : " ft_numlieuT
+                            DISPLAY "________________________________"
+                            DISPLAY " "
+                            PERFORM WITH TEST AFTER UNTIL Wfin = 0
+                                READ fterrain NEXT 
+                                AT END MOVE 0 TO Wfin
+                                NOT AT END
+                                    IF ft_numlieuT = fl_numlieu and ft_type = Wtype
+                                       DISPLAY "Numéro de terrain : ["ft_numterrain"]"
+                                       DISPLAY "Lieu : ["ft_numlieuT"]"
+                                       DISPLAY "Longueur : ["ft_longueur"]"
+                                       DISPLAY "Largeur : ["ft_largeur"]"
+                                       DISPLAY "Type : ["ft_type "]"
+                                       DISPLAY "Prix : ["ft_prix "]"
+                                       DISPLAY "Couvert : ["ft_couvert "]"
+                                       DISPLAY "________________________________"   
+                                       MOVE 1 TO Wtrouve 
+                                    END-IF
+                                END-READ
+                            END-PERFORM 
+                        END-START
+                END-READ
+            END-PERFORM
+           OPEN I-O freservation
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0 
+                OPEN I-O fterrain
+               PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+                       DISPLAY "Entrez le numéro de terrain :"
+                       ACCEPT terrain_saisi
+                       MOVE terrain_saisi TO ft_numterrain
+                       READ fterrain
+                       INVALID KEY  DISPLAY " "
+                                    MOVE 1 TO Wtrouve
+                                    DISPLAY "Terrain inexistant"
+                       NOT INVALID KEY DISPLAY "Terrain existant"
+                                       MOVE 0 TO Wtrouve
+                       END-READ
+               END-PERFORM
+
+               DISPLAY "Entrez l'heure de la réservation :"
+               ACCEPT heure_saisie
+
+               DISPLAY "Entrez la date de la réservation :"
+               ACCEPT date_saisie
+
+               MOVE terrain_saisi TO fr_numterrain
+               MOVE heure_saisie TO fr_heure
+               MOVE date_saisie TO fr_date 
+               READ freservation
+                   INVALID KEY  DISPLAY " "
+                                    MOVE 0 TO Wtrouve
+                   NOT INVALID KEY DISPLAY "La réservation existe déjà, Essayez un autre Crénaux"
+                                    MOVE 1 TO Wtrouve
+               END-READ 
+           END-PERFORM
+
+           IF global_role_user = 1 THEN
+               MOVE global_id_user TO fr_numutilisateur
+           ELSE
+               DISPLAY "Entrez l'id de l'utilisateur de la réservation :"
+               ACCEPT id_utilisateur
+               MOVE id_utilisateur TO fr_numutilisateur
+           END-IF
+           DISPLAY "Location de matériel (Oui/Non) :"
+           ACCEPT materiel
+           MOVE materiel TO fr_materiel
+           WRITE tamp_freservation
+           IF cr_freservation = "00"
+               DISPLAY "Réservation ajoutée avec succès."
+           ELSE
+               DISPLAY "Erreur lors de l'ajout de la réservation."   
+           CLOSE fterrain
+           CLOSE flieu 
            CLOSE freservation.
 
        AFFICHAGE_RESERVATION.
@@ -1090,6 +1239,7 @@
 
        MODIF-LIEU.
            OPEN I-O flieu
+           MOVE 0 TO Wtrouve
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
                DISPLAY "Numéro du lieu à modifier : "
                ACCEPT Wnumlieu
@@ -1115,19 +1265,36 @@
                END-READ
            END-PERFORM
            CLOSE futilisateur
-               
-               DISPLAY "Nouvelle adresse : ( actuel "fl_adresse" )"
+           
+           MOVE 0 TO Wtrouve
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+               DISPLAY "Nouvelle adresse (ville) : ( actuel "fl_adresse" )"
                ACCEPT Wadresse
-               DISPLAY "Nouveau nombre de terrain : ( actuel "
-               fl_terrain_existant" )"
-               ACCEPT Wterrain_existant
+               IF Wadresse = fl_adresse
+                    DISPLAY 'OUI'
+                    MOVE 1 TO Wtrouve
+               END-IF        
+               MOVE Wadresse TO fl_adresse
+               READ flieu
+               INVALID KEY DISPLAY "Adresse libre" 
+                       MOVE 1 TO Wtrouve
+               NOT INVALID KEY DISPLAY "Adresse non libre"
+                       MOVE 0 TO Wtrouve
+               END-READ
+           END-PERFORM    
+           DISPLAY "Nouveau nombre de terrain : ( actuel "
+           fl_terrain_existant" )"
+           ACCEPT Wterrain_existant
 
-               MOVE Wgerant TO fl_gerant
-               Move Wadresse TO fl_adresse
-               MOVE Wterrain_existant TO fl_terrain_existant
-    
-               REWRITE tamp_flieu FROM W_flieu
-               DISPLAY "Lieu modifié avec succès"
+           MOVE Wgerant TO fl_gerant
+           Move Wadresse TO fl_adresse
+           MOVE Wterrain_existant TO fl_terrain_existant
+
+           REWRITE tamp_flieu FROM W_flieu
+           IF cr_flieu = "00"
+           DISPLAY "Lieu modifié avec succès."
+           ELSE
+               DISPLAY "Erreur lors de la mise à jour du lieu. Gérant appartenant déja à un lieu ou "   
            END-IF
            CLOSE flieu.
 
