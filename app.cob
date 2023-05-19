@@ -182,8 +182,7 @@
                         OPEN OUTPUT fstat
                 END-IF
                 CLOSE fstat
-
-                PERFORM AFFICHAGE_UTILISATEUR.
+                PERFORM AFFICHAGE_UTILISATEUR
                 ACCEPT WS-CURRENT-DATE-DATA FROM DATE             
                 PERFORM CONNEXION_UTILISATEUR.
         STOP RUN.
@@ -618,8 +617,11 @@
 
         DECONNECTER_UTILISATEUR.
            OPEN I-O futilisateur
+           MOVE 0 TO Wtrouve
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
                MOVE global_id_user TO fu_numutilisateur
+               DISPLAY global_id_user
+               DISPLAY fu_numutilisateur
                READ futilisateur
                INVALID KEY  DISPLAY "Utilisateur introuvable"
                             MOVE 0 TO Wtrouve
