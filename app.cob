@@ -68,7 +68,7 @@
              02 fr_cleres.
                 03 fr_numterrain PIC 9(9).
                 03 fr_heure PIC 9(2).
-                03 fr_date PIC A(10).
+                03 fr_date PIC 9(4).
              02 fr_numutilisateur PIC 9(10).
              02 fr_materiel PIC A(3).
        
@@ -109,7 +109,7 @@
                 02 W_fr_cle.
                   03 terrain_saisi PIC 9(9).
                   03 heure_saisie PIC 9(2).
-                  03 date_saisie PIC A(10).
+                  03 date_saisie PIC 9(4).
                 02 id_utilisateur PIC 9(10).  
                 02 materiel PIC A(3).
                01 W_futilisateur.
@@ -137,6 +137,20 @@
               01 exitmenu PIC A.
               01 global_id_user PIC 9(10).
               01 global_role_user PIC 9(2).
+              01 WS-CURRENT-DATE-DATA.
+                05  WS-CURRENT-DATE.
+                    10  WS-CURRENT-YEAR         PIC 9(2).
+                    10  WS-CURRENT-MONTH        PIC 9(2).
+                    10  WS-CURRENT-DAY          PIC 9(2).
+                05  WS-CURRENT-TIME.
+                    10  WS-CURRENT-HOURS        PIC 9(2).
+                    10  WS-CURRENT-MINUTE       PIC 9(2).
+                    10  WS-CURRENT-SECOND       PIC 9(2).
+                    10  WS-CURRENT-MILLISECONDS PIC 9(2).
+              01 WS-MONTH PIC 9(4).
+              01 maxday PIC 9(2).
+              01 reste PIC 9(2).
+              01 jour PIC 9(2).
 
         PROCEDURE DIVISION.
                 OPEN I-O futilisateur
@@ -170,7 +184,7 @@
                 CLOSE fstat
 
                 PERFORM AFFICHAGE_UTILISATEUR.
-
+                ACCEPT WS-CURRENT-DATE-DATA FROM DATE             
                 PERFORM CONNEXION_UTILISATEUR.
         STOP RUN.
 
@@ -790,11 +804,43 @@
                        END-READ
                END-PERFORM
 
-               DISPLAY "Entrez l'heure de la réservation :"
-               ACCEPT heure_saisie
+               MOVE 0 TO Wtrouve
+               PERFORM WITH TEST AFTER UNTIL Wtrouve = 1        
+                    DISPLAY "Entrez le crénaux de la réservation (1-8) :"
+                    ACCEPT heure_saisie
+                    IF heure_saisie <= 8 and heure_saisie >=1
+                    MOVE 1 TO Wtrouve
+                    ELSE
+                    DISPLAY "Crénaux invalide"
+                    END-IF
+               END-PERFORM
 
-               DISPLAY "Entrez la date de la réservation :"
-               ACCEPT date_saisie
+                MOVE 0 TO Wtrouve
+               PERFORM WITH TEST AFTER UNTIL Wtrouve = 1 
+                   DISPLAY "Entrez la date de la réservation (JJMM) :"
+                   ACCEPT date_saisie
+                   DISPLAY date_saisie(1:2)
+                   DISPLAY date_saisie(3:2)
+                   DIVIDE date_saisie(3:2) BY 2 GIVING jour REMAINDER reste
+                   IF jour = 0
+                        MOVE 30 TO maxday
+                   ELSE 
+                        MOVE 31 TO maxday
+                   END-IF     
+                   IF date_saisie(1:2) IS NUMERIC AND
+                      date_saisie(1:2) > 0 AND
+                      date_saisie(1:2) <= maxday AND
+                      date_saisie(3:2) IS NUMERIC AND
+                      date_saisie(3:2) > 0 AND
+                      date_saisie(3:2) <= 12 AND 
+                      (date_saisie(3:2) > WS-CURRENT-MONTH OR 
+                        (date_saisie(3:2) = WS-CURRENT-MONTH 
+                            AND date_saisie(1:2) > WS-CURRENT-DAY))             
+                      MOVE 1 TO Wtrouve
+                   ELSE
+                      DISPLAY "Date invalide. Veuillez réessayer."
+                   END-IF
+               END-PERFORM
 
                MOVE terrain_saisi TO fr_numterrain
                MOVE heure_saisie TO fr_heure
@@ -891,11 +937,44 @@
                        END-READ
                END-PERFORM
 
-               DISPLAY "Entrez l'heure de la réservation :"
-               ACCEPT heure_saisie
+               MOVE 0 TO Wtrouve
+               PERFORM WITH TEST AFTER UNTIL Wtrouve = 1        
+                    DISPLAY "Entrez le crénaux de la réservation (1-8) :"
+                    ACCEPT heure_saisie
+                    IF heure_saisie <= 8 and heure_saisie >=1
+                    MOVE 1 TO Wtrouve
+                    ELSE
+                    DISPLAY "Crénaux invalide"
+                    END-IF
+               END-PERFORM
 
-               DISPLAY "Entrez la date de la réservation :"
-               ACCEPT date_saisie
+               MOVE 0 TO Wtrouve
+               PERFORM WITH TEST AFTER UNTIL Wtrouve = 1 
+                   DISPLAY "Entrez la date de la réservation (JJMM) :"
+                   ACCEPT date_saisie
+                   DISPLAY date_saisie(1:2)
+                   DISPLAY date_saisie(3:2)
+                   DIVIDE date_saisie(3:2) BY 2 GIVING jour REMAINDER reste
+                   IF jour = 0
+                        MOVE 30 TO maxday
+                   ELSE 
+                        MOVE 31 TO maxday
+                   END-IF     
+                   IF date_saisie(1:2) IS NUMERIC AND
+                      date_saisie(1:2) > 0 AND
+                      date_saisie(1:2) <= maxday AND
+                      date_saisie(3:2) IS NUMERIC AND
+                      date_saisie(3:2) > 0 AND
+                      date_saisie(3:2) <= 12 AND 
+                      (date_saisie(3:2) > WS-CURRENT-MONTH OR 
+                        (date_saisie(3:2) = WS-CURRENT-MONTH 
+                            AND date_saisie(1:2) > WS-CURRENT-DAY))             
+                      MOVE 1 TO Wtrouve
+                   ELSE
+                      DISPLAY "Date invalide. Veuillez réessayer."
+                   END-IF
+               END-PERFORM
+
 
                MOVE terrain_saisi TO fr_numterrain
                MOVE heure_saisie TO fr_heure
