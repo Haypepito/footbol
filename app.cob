@@ -87,10 +87,11 @@
              02 fs_cle.
                 03 fs_lieu PIC A(50).
                 03 fs_mois PIC 9(2).
+             02 fs_nb_reservation PIC 9(9).
              02 fs_type_reservation_gazon PIC 9(9).
              02 fs_type_reservation_synthetique PIC 9(9).
              02 fs_type_reservation_falin PIC 9(9).
-             02 fs_materiel PIC 9(9).
+             02 fs_nb_reservation_materiel PIC 9(9).
        
        WORKING-STORAGE SECTION.
 
@@ -148,6 +149,8 @@
                     10  WS-CURRENT-SECOND       PIC 9(2).
                     10  WS-CURRENT-MILLISECONDS PIC 9(2).
               01 WS-MONTH PIC 9(4).
+              01 Wmoisstat PIC 9(2).
+              01 Wadressestat PIC A(50).
               01 maxday PIC 9(2).
               01 reste PIC 9(2).
               01 jour PIC 9(2).
@@ -338,9 +341,10 @@
                 DISPLAY "2. Réservation"
                 DISPLAY "3. Terrain"
                 DISPLAY "4. Lieu"
-                DISPLAY "5. Se déconnecter"
+                DISPLAY "5. Statistiques"
+                DISPLAY "6. Se déconnecter"
                 DISPLAY "0. Quitter"
-                DISPLAY "Entrez votre choix (0-5):"
+                DISPLAY "Entrez votre choix (0-6):"
                 ACCEPT choice
 
                 EVALUATE choice
@@ -353,6 +357,8 @@
                     WHEN '4'
                         PERFORM MENU_LIEU
                     WHEN '5'
+                        PERFORM AFFICHAGE_STAT
+                    WHEN '6'
                         DISPLAY "Vous êtes bien déconnecté"
                         PERFORM DECONNECTER_UTILISATEUR
                         PERFORM CONNEXION_UTILISATEUR
@@ -1685,3 +1691,108 @@
                end-read
            end-perform
            close fterrain.
+
+              AFFICHAGE_STAT.
+           OPEN INPUT fstat
+           DISPLAY "Rechercher des statistiques"
+           DISPLAY "________________________________"
+           
+           MOVE 0 TO Wtrouve
+               PERFORM WITH TEST AFTER UNTIL Wtrouve = 1 
+                   DISPLAY "Entrez le mois :"
+                   ACCEPT Wmoisstat   
+                   IF Wmoisstat(1:2) IS NUMERIC AND
+                      Wmoisstat(1:2) > 0 AND
+                      Wmoisstat(1:2) <= 12 AND 
+                      Wmoisstat(1:2) < WS-CURRENT-MONTH            
+                      MOVE 1 TO Wtrouve
+                   ELSE
+                      DISPLAY "Mois invalide. Veuillez réessayer."
+                   END-IF
+               END-PERFORM
+
+           MOVE 0 TO Wtrouve
+               PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+                   DISPLAY "Veuillez saisir l'adresse du lieu :"
+                   OPEN INPUT flieu
+                   ACCEPT Wadressestat
+                   MOVE Wadressestat TO fl_adresse
+                   READ flieu RECORD KEY IS fl_adresse
+                   INVALID KEY DISPLAY "Aucunes correspondances avec nos centres."                          
+                   NOT INVALID KEY
+                        MOVE 1 TO Wtrouve
+ 
+                   END-READ
+               END-PERFORM
+
+               MOVE Wmoisstat TO fs_mois
+               MOVE Wadressestat TO fs_lieu
+
+           READ fstat
+           INVALID KEY DISPLAY "Aucunes statistiques disponibles"
+           NOT INVALID KEY       
+           IF fs_mois = Wmoisstat AND fs_lieu  = Wadressestat
+           DISPLAY "Lieu : ["fs_lieu"]"
+           DISPLAY "Mois : ["fs_mois"]"
+           DISPLAY "Nombre de réservation sur le mois : ["fs_nb_reservation"]"
+           DISPLAY "Nombre de réservation avec type gazon : ["fs_type_reservation_gazon"]"
+           DISPLAY "Nombre de réservation avec type synthétique : ["fs_type_reservation_synthetique"]"
+           DISPLAY "Nombre de réservation avec type falin : ["fs_type_reservation_falin"]"
+           DISPLAY "Nombre de réservation avec matériel : ["fs_nb_reservation_materiel"]"
+           DISPLAY "________________________________"
+           END-IF
+           END-READ
+           CLOSE fstat.
+          
+       UPDATE-STATS.
+            OPEN INPUT freservation
+            OPEN I-O fstat
+            MOVE 1 TO Wfin
+            PERFORM WITH TEST AFTER UNTIL Wfin=0
+                READ freservation
+                AT END MOVE 0 TO Wfin
+                NOT AT END
+            MOVE fr_numterrain TO ft_numterrain
+            READ fterrain RECORD KEY IS ft_numterrain
+            NOT INVALID KEY
+                MOVE ft_numlieuT TO fl_numlieu
+                READ flieu RECORD KEY IS fl_numlieu
+                NOT INVALID KEY
+                    MOVE fl_adresse TO fs_lieu
+                    READ fstat RECORD KEY IS fs_cle
+                    INVALID KEY
+                        INITIALIZE tamp_fstat
+                        MOVE fr_date TO fs_mois
+                        ADD 1 TO fs_nb_reservation
+                        EVALUATE TRUE
+                            WHEN ft_type = "GAZON"
+                                ADD 1 TO fs_type_reservation_gazon
+                            WHEN ft_type = "SYNTHETIQUE"
+                                ADD 1 TO fs_type_reservation_synthetique
+                            WHEN ft_type = "FALIN"
+                                ADD 1 TO fs_type_reservation_falin
+                        END-EVALUATE
+                        IF fr_materiel = "OUI"
+                            ADD 1 TO fs_nb_reservation_materiel
+                        END-IF
+                        WRITE tamp_fstat
+                    NOT INVALID KEY
+                        ADD 1 TO fs_nb_reservation
+                        EVALUATE TRUE
+                            WHEN ft_type = "GAZON"
+                                ADD 1 TO fs_type_reservation_gazon
+                            WHEN ft_type = "SYNTHETIQUE"
+                                ADD 1 TO fs_type_reservation_synthetique
+                            WHEN ft_type = "FALIN"
+                                ADD 1 TO fs_type_reservation_falin
+                        END-EVALUATE
+                        IF fr_materiel = "OUI"
+                            ADD 1 TO fs_nb_reservation_materiel
+                        END-IF
+                        REWRITE tamp_fstat
+                       END-READ
+                   END-READ
+               END-READ
+           END-PERFORM
+           CLOSE freservation
+           CLOSE fstat.
