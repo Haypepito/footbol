@@ -1201,8 +1201,24 @@
            END-PERFORM
            CLOSE futilisateur
     
-           DISPLAY "Adresse du lieu : "
-           ACCEPT Wadresse
+
+           MOVE 0 TO Wtrouve
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
+               DISPLAY "Adresse du lieu : "
+               ACCEPT Wadresse
+               MOVE Wadresse TO fl_adresse
+               READ flieu KEY IS fl_adresse
+               INVALID KEY DISPLAY " " 
+                       MOVE 1 TO Wtrouve
+               NOT INVALID KEY 
+                       IF Wadresse = fl_adresse
+                            MOVE 1 TO Wtrouve
+                       ELSE 
+                       DISPLAY "Adresse non libre"     
+                       MOVE 0 TO Wtrouve
+                       END-IF  
+               END-READ
+           END-PERFORM     
 
            DISPLAY "Nombre de terrain pour le lieu : "
            ACCEPT Wterrain_existant
@@ -1270,16 +1286,17 @@
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
                DISPLAY "Nouvelle adresse (ville) : ( actuel "fl_adresse" )"
                ACCEPT Wadresse
-               IF Wadresse = fl_adresse
-                    DISPLAY 'OUI'
-                    MOVE 1 TO Wtrouve
-               END-IF        
                MOVE Wadresse TO fl_adresse
-               READ flieu
-               INVALID KEY DISPLAY "Adresse libre" 
+               READ flieu KEY IS fl_adresse
+               INVALID KEY DISPLAY " " 
                        MOVE 1 TO Wtrouve
-               NOT INVALID KEY DISPLAY "Adresse non libre"
+               NOT INVALID KEY 
+                       IF Wadresse = fl_adresse
+                            MOVE 1 TO Wtrouve
+                       ELSE 
+                       DISPLAY "Adresse non libre"     
                        MOVE 0 TO Wtrouve
+                       END-IF  
                END-READ
            END-PERFORM    
            DISPLAY "Nouveau nombre de terrain : ( actuel "
