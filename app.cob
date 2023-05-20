@@ -843,19 +843,19 @@
                    ELSE 
                         MOVE 31 TO maxday
                    END-IF     
-                   *>IF date_saisie(1:2) IS NUMERIC AND
-                      *>date_saisie(1:2) > 0 AND
-                      *>date_saisie(1:2) <= maxday AND
-                      *>date_saisie(3:2) IS NUMERIC AND
-                      *>date_saisie(3:2) > 0 AND
-                      *>date_saisie(3:2) <= 12 AND 
-                      *>(date_saisie(3:2) > WS-CURRENT-MONTH OR 
-                        *>(date_saisie(3:2) = WS-CURRENT-MONTH 
-                            *>AND date_saisie(1:2) > WS-CURRENT-DAY))             
+                   IF date_saisie(1:2) IS NUMERIC AND
+                      date_saisie(1:2) > 0 AND
+                      date_saisie(1:2) <= maxday AND
+                      date_saisie(3:2) IS NUMERIC AND
+                      date_saisie(3:2) > 0 AND
+                      date_saisie(3:2) <= 12 AND 
+                      (date_saisie(3:2) > WS-CURRENT-MONTH OR 
+                        (date_saisie(3:2) = WS-CURRENT-MONTH 
+                            AND date_saisie(1:2) > WS-CURRENT-DAY))             
                       MOVE 1 TO Wtrouve
-                   *>ELSE
-                      *>DISPLAY "Date invalide. Veuillez réessayer."
-                   *>END-IF*
+                   ELSE
+                      DISPLAY "Date invalide. Veuillez réessayer."
+                   END-IF
                END-PERFORM
 
                MOVE terrain_saisi TO fr_numterrain
