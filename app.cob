@@ -1730,8 +1730,7 @@
                NOT INVALID KEY
                     MOVE 1 TO Wtrouve
                END-READ
-           END-PERFORM
-       
+           END-PERFORM   
            
            OPEN INPUT fterrain
            OPEN INPUT flieu
@@ -1743,37 +1742,36 @@
                
            MOVE WlieuS TO fl_adresse
            READ flieu RECORD KEY IS fl_adresse
-           INVALID KEY DISPLAY " "
+           
            NOT INVALID KEY
                MOVE fl_numlieu TO ft_numlieuT
                START fterrain, KEY IS = ft_numlieuT
-               INVALID KEY DISPLAY " "
+               
                NOT INVALID KEY
                    MOVE 1 TO Wfinfin  
                    PERFORM WITH TEST AFTER UNTIL Wfinfin = 0
                    READ fterrain NEXT 
-                   AT END DISPLAY " "
+                   AT END
                    MOVE 0 TO Wfinfin
-
                    NOT AT END
                        MOVE 1 TO WfinfinS 
                        OPEN INPUT freservation
                        PERFORM WITH TEST AFTER UNTIL WfinfinS = 0
                        READ freservation NEXT 
-                       AT END DISPLAY " "
+                       AT END
                        MOVE 0 TO WfinfinS   
                        NOT AT END
                            IF fr_date(3:2) = WmoisS AND fl_adresse = WlieuS AND fr_numterrain = ft_numterrain
                                ADD 1 TO Wnb_reservationS
+                               IF fr_materiel = "Oui" OR fr_materiel = "oui" OR fr_materiel = "OUI"
+                                   ADD 1 TO Wnb_reservation_materiel
+                               END-IF
                                IF ft_type = "gazon" OR ft_type = "GAZON" 
                                    ADD 1 TO Wreservation_gazon
                                ELSE IF ft_type = "synthétique" OR ft_type = "SYNTHÉTIQUE"
                                    ADD 1 TO Wreservation_synthetique
                                ELSE IF ft_type = "falin" OR ft_type = "FALIN"
                                    ADD 1 TO Wreservation_falin
-                               END-IF
-                               IF fr_materiel NOT = SPACES
-                                   ADD 1 TO Wnb_reservation_materiel
                                END-IF
                             END-IF
                           END-READ
@@ -1782,8 +1780,7 @@
                    END-READ
                    END-PERFORM
                    END-START     
-           END-READ
-       
+           END-READ  
            
            CLOSE fterrain
            CLOSE flieu      
@@ -1795,41 +1792,32 @@
            MOVE Wreservation_synthetique TO fs_type_reservation_synthetique    
            MOVE Wreservation_falin TO fs_type_reservation_falin
            MOVE Wnb_reservation_materiel TO fs_nb_reservation_materiel
+
            REWRITE tamp_fstat FROM W_fstat 
            READ fstat RECORD KEY IS fs_cle
            INVALID KEY
                WRITE tamp_fstat FROM W_fstat
-               INVALID KEY DISPLAY "Unable to write statistics."
+               INVALID KEY DISPLAY "Erreur écriture des statistiques"
            NOT INVALID KEY
            REWRITE tamp_freservation FROM W_freservation
                REWRITE tamp_fstat FROM W_fstat
-               INVALID KEY DISPLAY "Unable to update statistics."
-           END-READ
-
-           IF cr_fstat = "00"
-           DISPLAY "Stat modifié avec succès."
-           ELSE
-               DISPLAY "Erreur lors de la mise à jour du lieu. Gérant appartenant déja à un lieu ou "   
-           END-IF
+               INVALID KEY DISPLAY "Erreur mise à jour des statistiques"
+           END-READ       
            
-           CLOSE fstat
-
-           DISPLAY "Toutes les stats (test)"
-           DISPLAY "________________________________" 
-           OPEN INPUT fstat
-           MOVE 1 TO Wfin
-           PERFORM WITH TEST AFTER UNTIL Wfin=0
-                    READ fstat NEXT
-                    AT END MOVE 0 TO Wfin
-                    NOT AT END
-                       DISPLAY "Lieu : ["fs_lieu"]"
-                       DISPLAY "Mois : ["fs_mois"]"
-                       DISPLAY "Nombre de réservation sur le mois : ["fs_nb_reservation"]"
-                       DISPLAY "Nombre de réservation avec type gazon : ["fs_type_reservation_gazon"]"
-                       DISPLAY "Nombre de réservation avec type synthétique : ["fs_type_reservation_synthetique"]"
-                       DISPLAY "Nombre de réservation avec type falin : ["fs_type_reservation_falin"]"
-                       DISPLAY "Nombre de réservation avec matériel : ["fs_nb_reservation_materiel"]"
-                       DISPLAY "________________________________"
-                    END-READ
-           END-PERFORM     
+           READ fstat
+           INVALID KEY DISPLAY "Aucunes statistiques disponibles"
+           NOT INVALID KEY       
+           IF fs_mois = WmoisS AND fs_lieu  = WlieuS
+           DISPLAY "________________________________"
+           DISPLAY "Affichage des statistiques pour le mois et le lieu choisi :"
+           DISPLAY "Lieu : ["fs_lieu"]"
+           DISPLAY "Mois : ["fs_mois"]"
+           DISPLAY "Nombre de réservation sur le mois : ["fs_nb_reservation"]"
+           DISPLAY "Nombre de réservation avec type gazon : ["fs_type_reservation_gazon"]"
+           DISPLAY "Nombre de réservation avec type synthétique : ["fs_type_reservation_synthetique"]"
+           DISPLAY "Nombre de réservation avec type falin : ["fs_type_reservation_falin"]"
+           DISPLAY "Nombre de réservation avec matériel : ["fs_nb_reservation_materiel"]"
+           DISPLAY "________________________________"
+           END-IF
+           END-READ
            CLOSE fstat.
