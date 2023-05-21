@@ -1732,7 +1732,7 @@
                END-READ
            END-PERFORM
        
-           OPEN INPUT freservation
+           
            OPEN INPUT fterrain
            OPEN INPUT flieu
            MOVE 0 TO Wnb_reservationS
@@ -1743,26 +1743,29 @@
                
            MOVE WlieuS TO fl_adresse
            READ flieu RECORD KEY IS fl_adresse
-           INVALID KEY DISPLAY "caca"
+           INVALID KEY DISPLAY " "
            NOT INVALID KEY
                MOVE fl_numlieu TO ft_numlieuT
                START fterrain, KEY IS = ft_numlieuT
-               INVALID KEY DISPLAY "caca"
+               INVALID KEY DISPLAY " "
                NOT INVALID KEY
+                   MOVE 1 TO Wfinfin  
                    PERFORM WITH TEST AFTER UNTIL Wfinfin = 0
                    READ fterrain NEXT 
-                   AT END DISPLAY "caca"
-                   MOVE 0 TO Wfinfin   
+                   AT END DISPLAY " "
+                   MOVE 0 TO Wfinfin
+
                    NOT AT END
+                       MOVE 1 TO WfinfinS 
+                       OPEN INPUT freservation
                        PERFORM WITH TEST AFTER UNTIL WfinfinS = 0
                        READ freservation NEXT 
-                       AT END DISPLAY "caca"
+                       AT END DISPLAY " "
                        MOVE 0 TO WfinfinS   
                        NOT AT END
-                           IF fr_date(3:2) = WmoisS AND fl_adresse = WlieuS
+                           IF fr_date(3:2) = WmoisS AND fl_adresse = WlieuS AND fr_numterrain = ft_numterrain
                                ADD 1 TO Wnb_reservationS
-                               DISPLAY Wnb_reservationS
-                               IF ft_type = "gazon" OR ft_type = "GAZON"
+                               IF ft_type = "gazon" OR ft_type = "GAZON" 
                                    ADD 1 TO Wreservation_gazon
                                ELSE IF ft_type = "synthétique" OR ft_type = "SYNTHÉTIQUE"
                                    ADD 1 TO Wreservation_synthetique
@@ -1774,13 +1777,14 @@
                                END-IF
                             END-IF
                           END-READ
-                          END-PERFORM  
+                        END-PERFORM
+                        CLOSE freservation  
                    END-READ
                    END-PERFORM
                    END-START     
            END-READ
        
-           CLOSE freservation
+           
            CLOSE fterrain
            CLOSE flieu      
        
@@ -1791,8 +1795,8 @@
            MOVE Wreservation_synthetique TO fs_type_reservation_synthetique    
            MOVE Wreservation_falin TO fs_type_reservation_falin
            MOVE Wnb_reservation_materiel TO fs_nb_reservation_materiel
-       
-           READ fstat
+           REWRITE tamp_fstat FROM W_fstat 
+           READ fstat RECORD KEY IS fs_cle
            INVALID KEY
                WRITE tamp_fstat FROM W_fstat
                INVALID KEY DISPLAY "Unable to write statistics."
@@ -1801,15 +1805,12 @@
                REWRITE tamp_fstat FROM W_fstat
                INVALID KEY DISPLAY "Unable to update statistics."
            END-READ
-       
-           DISPLAY "Lieu : [" WlieuS "]"
-           DISPLAY "Mois : [" WmoisS "]"
-           DISPLAY "Nombre de réservations pour le mois : [" Wnb_reservationS "]"
-           DISPLAY "Nombre de réservations de type gazon : [" Wreservation_gazon "]"
-           DISPLAY "Nombre de réservations de type synthétique : [" Wreservation_synthetique "]"
-           DISPLAY "Nombre de réservations de type falin : [" Wreservation_falin "]"
-           DISPLAY "Nombre de réservations avec matériel : [" fs_nb_reservation_materiel "]"
-           DISPLAY "________________________________"
+
+           IF cr_fstat = "00"
+           DISPLAY "Stat modifié avec succès."
+           ELSE
+               DISPLAY "Erreur lors de la mise à jour du lieu. Gérant appartenant déja à un lieu ou "   
+           END-IF
            
            CLOSE fstat
 
@@ -1832,4 +1833,3 @@
                     END-READ
            END-PERFORM     
            CLOSE fstat.
-           
