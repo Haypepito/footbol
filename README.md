@@ -2,6 +2,11 @@
 
 Bonjour à tous, bienvenue sur notre application de réservation de terrain de football.
 
+Pour lancer notre application veuillez utiliser les 2 commandes suivantes dans votre terminal : 
+
+    cobc -x --free app.cob
+    ./app
+
 Nous allons vous mettre à disposition un jeu de donnée avec 3 utilisateurs :
 
 | Numéro      | Nom      | Prénom        | Login      | Rôle | Connecté | Mdp            |
