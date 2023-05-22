@@ -550,20 +550,16 @@
               END-READ
            END-PERFORM
 
-           DISPLAY "Entrez votre email :"
-           ACCEPT Wmail
-
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
-           READ futilisateur NEXT
-               AT END MOVE 0 TO Wtrouve
-               NOT AT END
-                   IF fu_mail = Wmail THEN
-                       MOVE 1 TO Wtrouve
-                       DISPLAY "L'email est déjà utilisé."
-                       DISPLAY "Entrez votre email :"
-                       ACCEPT Wmail
-                   END-IF
-           END-READ
+                   DISPLAY "Entrez votre email :"
+                   ACCEPT Wmail
+                   MOVE Wmail TO fu_mail
+                   READ futilisateur RECORD KEY IS fu_mail
+                   INVALID KEY DISPLAY " "
+                                MOVE 0 TO Wtrouve
+                   NOT INVALID KEY DISPLAY "L'email est déjà utilisé."
+                                   MOVE 1 TO Wtrouve
+                   END-READ
            END-PERFORM
 
            DISPLAY "Rôle : "
@@ -745,13 +741,13 @@
                     READ futilisateur NEXT
                     AT END MOVE 0 TO Wfin
                     NOT AT END
-                       DISPLAY "Numéro : ["fu_numutilisateur"]"
-                       DISPLAY "Prénom : [" fu_prenom"]"
-                       DISPLAY "Nom : ["fu_nom "]"
-                       DISPLAY "Mail : ["fu_mail "]"
-                       DISPLAY "Role : ["fu_role "]"
-                       DISPLAY "Connecté : ["fu_connecte "]"
-                       DISPLAY "Mdp : ["fu_mdp "]"
+                       DISPLAY "Numéro : "fu_numutilisateur
+                       DISPLAY "Prénom : " fu_prenom
+                       DISPLAY "Nom : "fu_nom
+                       DISPLAY "Mail : "fu_mail
+                       DISPLAY "Role : "fu_role
+                       DISPLAY "Connecté : "fu_connecte
+                       DISPLAY "Mdp : "fu_mdp
                        DISPLAY "________________________________"
                     END-READ
             END-PERFORM
@@ -788,13 +784,13 @@
                                 AT END MOVE 0 TO Wfin
                                 NOT AT END
                                     IF ft_numlieuT = fl_numlieu
-                                       DISPLAY "Numéro de terrain : ["ft_numterrain"]"
-                                       DISPLAY "Lieu : ["ft_numlieuT"]"
-                                       DISPLAY "Longueur : ["ft_longueur"]"
-                                       DISPLAY "Largeur : ["ft_largeur"]"
-                                       DISPLAY "Type : ["ft_type "]"
-                                       DISPLAY "Prix : ["ft_prix "]"
-                                       DISPLAY "Couvert : ["ft_couvert "]"
+                                       DISPLAY "Numéro de terrain : "ft_numterrain
+                                       DISPLAY "Lieu : "ft_numlieuT
+                                       DISPLAY "Longueur : "ft_longueur
+                                       DISPLAY "Largeur : "ft_largeur
+                                       DISPLAY "Type : "ft_type
+                                       DISPLAY "Prix : "ft_prix
+                                       DISPLAY "Couvert : "ft_couvert
                                        DISPLAY "________________________________"   
                                     END-IF
                                 END-READ
@@ -921,13 +917,13 @@
                                 AT END MOVE 0 TO Wfin
                                 NOT AT END
                                     IF ft_numlieuT = fl_numlieu and ft_type = Wtype
-                                       DISPLAY "Numéro de terrain : ["ft_numterrain"]"
-                                       DISPLAY "Lieu : ["ft_numlieuT"]"
-                                       DISPLAY "Longueur : ["ft_longueur"]"
-                                       DISPLAY "Largeur : ["ft_largeur"]"
-                                       DISPLAY "Type : ["ft_type "]"
-                                       DISPLAY "Prix : ["ft_prix "]"
-                                       DISPLAY "Couvert : ["ft_couvert "]"
+                                       DISPLAY "Numéro de terrain : "ft_numterrain
+                                       DISPLAY "Lieu : "ft_numlieuT
+                                       DISPLAY "Longueur : "ft_longueur
+                                       DISPLAY "Largeur : "ft_largeur
+                                       DISPLAY "Type : "ft_type
+                                       DISPLAY "Prix : "ft_prix
+                                       DISPLAY "Couvert : "ft_couvert
                                        DISPLAY "________________________________"   
                                        MOVE 1 TO Wtrouve 
                                     END-IF
@@ -1029,11 +1025,11 @@
                     READ freservation NEXT
                     AT END MOVE 0 TO Wfin
                     NOT AT END
-                       DISPLAY "Numéro : ["fr_numterrain"]"
-                       DISPLAY "Num Utilisateur : ["fr_numutilisateur"]"
-                       DISPLAY "Date : ["fr_date"]"
-                       DISPLAY "Crénaux : ["fr_heure"]"
-                       DISPLAY "Matériel : ["fr_materiel"]"
+                       DISPLAY "Numéro : "fr_numterrain
+                       DISPLAY "Num Utilisateur : "fr_numutilisateur
+                       DISPLAY "Date : "fr_date
+                       DISPLAY "Crénaux : "fr_heure
+                       DISPLAY "Matériel : "fr_materiel
                        DISPLAY "________________________________"
                     END-READ
            END-PERFORM
@@ -1075,11 +1071,11 @@
                                             MOVE 0 TO Wfinfin
                                         NOT AT END 
                                             IF ft_numterrain = fr_numterrain
-                                               DISPLAY "Numéro : ["fr_numterrain"]"
-                                               DISPLAY "Num Utilisateur : ["fr_numutilisateur"]"
-                                               DISPLAY "Date : ["fr_date"]"
-                                               DISPLAY "Crénaux : ["fr_heure"]"
-                                               DISPLAY "Matériel : ["fr_materiel"]"
+                                               DISPLAY "Numéro : "fr_numterrain
+                                               DISPLAY "Num Utilisateur : "fr_numutilisateur
+                                               DISPLAY "Date : "fr_date
+                                               DISPLAY "Crénaux : "fr_heure
+                                               DISPLAY "Matériel : "fr_materiel
                                                DISPLAY "________________________________"
                                             END-IF
                                         END-READ
@@ -1115,11 +1111,11 @@
                         AT END MOVE 0 TO Wfin
                         NOT AT  END 
                            IF fr_numutilisateur = id_utilisateur
-                           DISPLAY "Numéro : ["fr_numterrain"]"
-                           DISPLAY "Num Utilisateur : ["fr_numutilisateur"]"
-                           DISPLAY "Date : ["fr_date"]"
-                           DISPLAY "Crénaux : ["fr_heure"]"
-                           DISPLAY "Matériel : ["fr_materiel"]"
+                           DISPLAY "Numéro : "fr_numterrain
+                           DISPLAY "Num Utilisateur : "fr_numutilisateur
+                           DISPLAY "Date : "fr_date
+                           DISPLAY "Crénaux : "fr_heure
+                           DISPLAY "Matériel : "fr_materiel
                            DISPLAY "________________________________"
                            END-IF
                         END-READ
@@ -1331,11 +1327,10 @@
                     READ flieu NEXT
                     AT END MOVE 0 TO Wfin
                     NOT AT END
-                       DISPLAY "Numéro : ["fl_numlieu"]"
-                       DISPLAY "Gérant : ["fl_gerant"]"
-                       DISPLAY "Adresse : ["fl_adresse"]"
-                       DISPLAY "Nombre de terrain : ["
-                       fl_terrain_existant"]"
+                       DISPLAY "Numéro : "fl_numlieu
+                       DISPLAY "Gérant : "fl_gerant
+                       DISPLAY "Adresse : "fl_adresse
+                       DISPLAY "Nombre de terrain : "fl_terrain_existant
                        DISPLAY "________________________________"
                     END-READ
            END-PERFORM
@@ -1442,11 +1437,11 @@
                                                             MOVE 0 TO Wfinfin
                                                         NOT AT END 
                                                             IF ft_numterrain = fr_numterrain
-                                                               DISPLAY "Numéro : ["fr_numterrain"]"
-                                                               DISPLAY "Num Utilisateur : ["fr_numutilisateur"]"
-                                                               DISPLAY "Date : ["fr_date"]"
-                                                               DISPLAY "Crénaux : ["fr_heure"]"
-                                                               DISPLAY "Matériel : ["fr_materiel"]"
+                                                               DISPLAY "Numéro : "fr_numterrain
+                                                               DISPLAY "Num Utilisateur : "fr_numutilisateur
+                                                               DISPLAY "Date : "fr_date
+                                                               DISPLAY "Crénaux : "fr_heure
+                                                               DISPLAY "Matériel : "fr_materiel
                                                                DISPLAY "________________________________"
                                                                delete freservation
                                                             END-IF
@@ -1542,13 +1537,13 @@
                    READ fterrain NEXT
                    AT END MOVE 0 TO Wfin
                    NOT AT END
-                       DISPLAY "Numéro : ["ft_numterrain"]"
-                       DISPLAY "Lieu : ["ft_numlieuT"]"
-                       DISPLAY "Longueur : ["ft_longueur"]"
-                       DISPLAY "Largeur : ["ft_largeur"]"
-                       DISPLAY "Type : ["ft_type "]"
-                       DISPLAY "Prix : ["ft_prix "]"
-                       DISPLAY "Couvert : ["ft_couvert "]"
+                       DISPLAY "Numéro : "ft_numterrain
+                       DISPLAY "Lieu : "ft_numlieuT
+                       DISPLAY "Longueur : "ft_longueur
+                       DISPLAY "Largeur : "ft_largeur
+                       DISPLAY "Type : "ft_type
+                       DISPLAY "Prix : "ft_prix
+                       DISPLAY "Couvert : "ft_couvert
                        DISPLAY "________________________________"
                    END-READ
            END-PERFORM
@@ -1578,13 +1573,13 @@
                         AT END MOVE 0 TO Wfin
                         NOT AT END
                             IF ft_numlieuT = fl_numlieu
-                               DISPLAY "Numéro : ["ft_numterrain"]"
-                               DISPLAY "Lieu : ["ft_numlieuT"]"
-                               DISPLAY "Longueur : ["ft_longueur"]"
-                               DISPLAY "Largeur : ["ft_largeur"]"
-                               DISPLAY "Type : ["ft_type "]"
-                               DISPLAY "Prix : ["ft_prix "]"
-                               DISPLAY "Couvert : ["ft_couvert "]"
+                               DISPLAY "Numéro : "ft_numterrain
+                               DISPLAY "Lieu : "ft_numlieuT
+                               DISPLAY "Longueur : "ft_longueur
+                               DISPLAY "Largeur : "ft_largeur
+                               DISPLAY "Type : "ft_type
+                               DISPLAY "Prix : "ft_prix
+                               DISPLAY "Couvert : "ft_couvert
                                DISPLAY "________________________________"   
                             END-IF
                         END-READ
@@ -1671,11 +1666,11 @@
                                             MOVE 0 TO Wfinfin
                                         NOT AT END 
                                             IF ft_numterrain = fr_numterrain
-                                               DISPLAY "Numéro : ["fr_numterrain"]"
-                                               DISPLAY "Num Utilisateur : ["fr_numutilisateur"]"
-                                               DISPLAY "Date : ["fr_date"]"
-                                               DISPLAY "Crénaux : ["fr_heure"]"
-                                               DISPLAY "Matériel : ["fr_materiel"]"
+                                               DISPLAY "Numéro : "fr_numterrain
+                                               DISPLAY "Num Utilisateur : "fr_numutilisateur
+                                               DISPLAY "Date : "fr_date
+                                               DISPLAY "Crénaux : "fr_heure
+                                               DISPLAY "Matériel : "fr_materiel
                                                DISPLAY "________________________________"
                                                delete freservation
                                             END-IF
@@ -1803,13 +1798,13 @@
            IF fs_mois = WmoisS AND fs_lieu  = WlieuS
            DISPLAY "________________________________"
            DISPLAY "Affichage des statistiques pour le mois et le lieu choisi :"
-           DISPLAY "Lieu : ["fs_lieu"]"
-           DISPLAY "Mois : ["fs_mois"]"
-           DISPLAY "Nombre de réservation sur le mois : ["fs_nb_reservation"]"
-           DISPLAY "Nombre de réservation avec type gazon : ["fs_type_reservation_gazon"]"
-           DISPLAY "Nombre de réservation avec type synthétique : ["fs_type_reservation_synthetique"]"
-           DISPLAY "Nombre de réservation avec type falin : ["fs_type_reservation_falin"]"
-           DISPLAY "Nombre de réservation avec matériel : ["fs_nb_reservation_materiel"]"
+           DISPLAY "Lieu : "fs_lieu
+           DISPLAY "Mois : "fs_mois
+           DISPLAY "Nombre de réservation sur le mois : "fs_nb_reservation
+           DISPLAY "Nombre de réservation avec type gazon : "fs_type_reservation_gazon
+           DISPLAY "Nombre de réservation avec type synthétique : "fs_type_reservation_synthetique
+           DISPLAY "Nombre de réservation avec type falin : "fs_type_reservation_falin
+           DISPLAY "Nombre de réservation avec matériel : "fs_nb_reservation_materiel
            DISPLAY "________________________________"
            END-IF
            END-READ
