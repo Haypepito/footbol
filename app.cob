@@ -1709,7 +1709,7 @@
            end-perform
            close fterrain.
 
-           COLLECTER_STATISTIQUES.
+       COLLECTER_STATISTIQUES.
            OPEN I-O fstat
            DISPLAY "Rechercher des statistiques"
            DISPLAY "________________________________"
