@@ -4,9 +4,9 @@ Bonjour à tous, bienvenue sur notre application de réservation de terrain de f
 
 Nous allons vous mettre à disposition un jeu de donnée avec 3 utilisateurs :
 
-| Numéro      | Prénom      | Nom        | Login      | Rôle | Connecté | Mdp            |
+| Numéro      | Nom      | Prénom        | Login      | Rôle | Connecté | Mdp            |
 |-------------|-------------|------------|------------|------|----------|----------------|
-| 1   | Amateur1    | NomAmateur1| amateur1   |   1  |    N     | 123 |
+| 1   | Amateur1    | NomAmateur1| Amateur1   |   1  |    N     | 123 |
 | 2   | Gerant1     | NomGerant1 | Gerant1    |   2  |    N     | 12345 |
 | 3   | Admin1      | NomAdmin1  | Admin1     |   3  |    O     | 1234567 |
 

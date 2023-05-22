@@ -193,7 +193,6 @@
                         OPEN OUTPUT fstat
                 END-IF
                 CLOSE fstat
-                PERFORM AFFICHAGE_UTILISATEUR
                 ACCEPT WS-CURRENT-DATE-DATA FROM DATE             
                 PERFORM CONNEXION_UTILISATEUR.
         STOP RUN.
