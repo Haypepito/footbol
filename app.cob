@@ -653,7 +653,6 @@
                    END-IF
                END-READ
            END-PERFORM
-
            CLOSE futilisateur.
 
        MODIF_DROIT.
@@ -991,7 +990,6 @@
                    END-IF
                END-PERFORM
 
-
                MOVE terrain_saisi TO fr_numterrain
                MOVE heure_saisie TO fr_heure
                MOVE date_saisie TO fr_date 
@@ -1094,8 +1092,7 @@
                 END-START
            END-READ
            CLOSE fterrain
-           CLOSE flieu. 
-        
+           CLOSE flieu.        
 
         RECHERCHER_RESERVATION.
            OPEN INPUT freservation 
@@ -1207,9 +1204,7 @@
                            NOT INVALID KEY MOVE 1 TO Wtrouve
                                 CLOSE futilisateur
                            END-READ
-                       END-PERFORM
-                        
-                        
+                       END-PERFORM                 
 
                         MOVE id_utilisateur TO fr_numutilisateur
                         MOVE terrain_saisi TO fr_numterrain
@@ -1239,9 +1234,7 @@
                            NOT INVALID KEY MOVE 1 TO Wtrouve
                                 CLOSE futilisateur
                            END-READ
-                       END-PERFORM
-                        
-                        
+                       END-PERFORM                        
 
                         MOVE id_utilisateur TO fr_numutilisateur
                         MOVE terrain_saisi TO fr_numterrain
