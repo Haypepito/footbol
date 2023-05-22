@@ -630,8 +630,6 @@
            MOVE 0 TO Wtrouve
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 1
                MOVE global_id_user TO fu_numutilisateur
-               DISPLAY global_id_user
-               DISPLAY fu_numutilisateur
                READ futilisateur
                INVALID KEY  DISPLAY "Utilisateur introuvable"
                             MOVE 0 TO Wtrouve
@@ -965,6 +963,15 @@
 
                MOVE 0 TO Wtrouve
                PERFORM WITH TEST AFTER UNTIL Wtrouve = 1        
+                    DISPLAY "Votre lieu vous propose 8 créneaux : "
+                    DISPLAY " -> Créneau 1 : 8h00 à 9h00"
+                    DISPLAY " -> Créneau 2 : 9h00 à 10h00"
+                    DISPLAY " -> Créneau 3 : 10h00 à 11h00"
+                    DISPLAY " -> Créneau 4 : 11h00 à 12h00"
+                    DISPLAY " -> Créneau 5 : 14h00 à 15h00"
+                    DISPLAY " -> Créneau 6 : 15h00 à 16h00"
+                    DISPLAY " -> Créneau 7 : 16h00 à 17h00"
+                    DISPLAY " -> Créneau 8 : 17h00 à 18h00"
                     DISPLAY "Entrez le crénaux de la réservation (1-8) :"
                     ACCEPT heure_saisie
                     IF heure_saisie <= 8 and heure_saisie >=1
@@ -1421,7 +1428,8 @@
 
        SUPPRIMER_LIEU.
            open I-O flieu
-           display "Suppression d'un lieu"
+           display "Suppression d'un lieu : "
+           display "Quel numéro de lieu voulez-vous supprimer ?"
            accept Wnumlieu
            MOVE Wnumlieu TO fl_numlieu
            MOVE 0 TO Wtrouve
