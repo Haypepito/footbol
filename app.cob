@@ -193,7 +193,6 @@
                         OPEN OUTPUT fstat
                 END-IF
                 CLOSE fstat
-                PERFORM AJOUT_UTILISATEUR
                 PERFORM AFFICHAGE_UTILISATEUR
                 ACCEPT WS-CURRENT-DATE-DATA FROM DATE             
                 PERFORM CONNEXION_UTILISATEUR.
@@ -881,9 +880,15 @@
                ACCEPT id_utilisateur
                MOVE id_utilisateur TO fr_numutilisateur
            END-IF
-           DISPLAY "Location de matériel (Oui/Non) :"
-           ACCEPT materiel
-           MOVE materiel TO fr_materiel
+           MOVE 1 TO Wtrouve
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+               DISPLAY "Location de matériel (Oui/Non) :"
+               ACCEPT materiel
+               MOVE materiel TO fr_materiel
+               IF materiel = 'Oui' or materiel = 'Non'
+                    MOVE 0 TO Wtrouve
+               END-IF
+           END-PERFORM 
            WRITE tamp_freservation
            IF cr_freservation = "00"
                DISPLAY "Réservation ajoutée avec succès."
@@ -1014,9 +1019,15 @@
                ACCEPT id_utilisateur
                MOVE id_utilisateur TO fr_numutilisateur
            END-IF
-           DISPLAY "Location de matériel (Oui/Non) :"
-           ACCEPT materiel
-           MOVE materiel TO fr_materiel
+          MOVE 1 TO Wtrouve
+           PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
+               DISPLAY "Location de matériel (Oui/Non) :"
+               ACCEPT materiel
+               MOVE materiel TO fr_materiel
+               IF materiel = 'Oui' or materiel = 'Non'
+                    MOVE 0 TO Wtrouve
+               END-IF
+           END-PERFORM 
            WRITE tamp_freservation
            IF cr_freservation = "00"
                DISPLAY "Réservation ajoutée avec succès."
