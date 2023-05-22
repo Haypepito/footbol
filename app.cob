@@ -9,7 +9,7 @@
            ACCESS MODE IS DYNAMIC
            RECORD KEY IS fu_numutilisateur
            ALTERNATE RECORD KEY IS fu_nom WITH DUPLICATES
-           ALTERNATE RECORD KEY IS fu_mail
+           ALTERNATE RECORD KEY IS fu_login
            FILE STATUS IS cr_futilisateur.
        
            SELECT flieu ASSIGN TO "lieux.dat"
@@ -51,7 +51,7 @@
              02 fu_numutilisateur PIC 9(9).
              02 fu_nom PIC A(30).
              02 fu_prenom PIC A(30).
-             02 fu_mail PIC A(50).
+             02 fu_login PIC A(50).
              02 fu_mdp PIC 9(20).
              02 fu_role PIC 9(1).
              02 fu_connecte PIC A.
@@ -104,7 +104,7 @@
               77 Wfin PIC 9(1).
               77 Wfinfin PIC 9(1).
               77 WfinfinS PIC 9(1).
-              77 Wmail_valide PIC 9(1).
+              77 Wlogin_valide PIC 9(1).
               77 Wreponse PIC A(1).
               77 attempts PIC 9(1).
               01 W_freservation.
@@ -118,7 +118,7 @@
                 02 Wnumutilisateur PIC 9(9).
                 02 Wnom PIC A(30).
                 02 Wprenom PIC A(30).
-                02 Wmail PIC A(50).
+                02 Wlogin PIC A(50).
                 02 Wmdp PIC 9(20).
                 02 Wrole PIC 9(1).
                 02 Wconnecte PIC A.
@@ -214,15 +214,15 @@
                 EVALUATE choice
                     WHEN '1'
                        OPEN I-O futilisateur
-                       DISPLAY "Entrez votre email :"
-                       ACCEPT Wmail
+                       DISPLAY "Entrez votre login :"
+                       ACCEPT Wlogin
                        DISPLAY "Entrez votre mot de passe :"
                        ACCEPT Wmdp
                        SET Wtrouve TO 0
                        SET attempts TO 0
-                       MOVE Wmail TO fu_mail
+                       MOVE Wlogin TO fu_login
                        PERFORM UNTIL Wtrouve = 1 OR attempts = 3
-                           READ futilisateur RECORD KEY IS fu_mail
+                           READ futilisateur RECORD KEY IS fu_login
                            INVALID KEY DISPLAY "Trop de tentatives. Programme terminé."
                                CLOSE futilisateur
                                STOP RUN
@@ -254,7 +254,7 @@
                                        CLOSE futilisateur
                                        STOP RUN
                                    ELSE
-                                       DISPLAY "Mot de passe ou mail incorrect. Essayez encore."
+                                       DISPLAY "Mot de passe ou login incorrect. Essayez encore."
                                        ACCEPT Wmdp
                                        READ futilisateur NEXT RECORD
                                    END-IF
@@ -551,13 +551,13 @@
            END-PERFORM
 
            PERFORM WITH TEST AFTER UNTIL Wtrouve = 0
-                   DISPLAY "Entrez votre email :"
-                   ACCEPT Wmail
-                   MOVE Wmail TO fu_mail
-                   READ futilisateur RECORD KEY IS fu_mail
+                   DISPLAY "Entrez votre login :"
+                   ACCEPT Wlogin
+                   MOVE Wlogin TO fu_login
+                   READ futilisateur RECORD KEY IS fu_login
                    INVALID KEY DISPLAY " "
                                 MOVE 0 TO Wtrouve
-                   NOT INVALID KEY DISPLAY "L'email est déjà utilisé."
+                   NOT INVALID KEY DISPLAY "Le login est déjà utilisé."
                                    MOVE 1 TO Wtrouve
                    END-READ
            END-PERFORM
@@ -569,7 +569,7 @@
            MOVE 'N' TO Wconnecte 
            MOVE Wprenom to fu_prenom
            MOVE Wnom to fu_nom
-           MOVE Wmail TO fu_mail
+           MOVE Wlogin TO fu_login
            MOVE Wrole to fu_role
            MOVE Wmdp TO fu_mdp
 
@@ -605,14 +605,14 @@
                ACCEPT Wnom
                DISPLAY "Nouveau prénom : ( actuel " fu_prenom" )"
                ACCEPT Wprenom
-               DISPLAY "Nouveau mail : ( actuel " fu_mail" )"
-               ACCEPT Wmail
+               DISPLAY "Nouveau login : ( actuel " fu_login" )"
+               ACCEPT Wlogin
                DISPLAY "Nouveau mdp : ( actuel " fu_mdp" )"
                ACCEPT Wmdp
 
                MOVE Wnom TO fu_nom
                Move Wprenom TO fu_prenom
-               MOVE Wmail TO fu_mail
+               MOVE Wlogin TO fu_login
                MOVE Wmdp TO fu_mdp
                MOVE Wrole TO fu_role
     
@@ -668,14 +668,14 @@
                MOVE fu_mdp TO Wmdp
                MOVE fu_nom TO Wnom
                MOVE fu_prenom TO Wprenom
-               MOVE fu_mail TO Wmail
+               MOVE fu_login TO Wlogin
                
                DISPLAY "Nouveau rôle : ( actuel " fu_role" )"
                ACCEPT Wrole
 
                MOVE Wnom TO fu_nom
                Move Wprenom TO fu_prenom
-               MOVE Wmail TO fu_mail
+               MOVE Wlogin TO fu_login
                MOVE Wmdp TO fu_mdp
                MOVE Wrole TO fu_role
     
@@ -701,7 +701,7 @@
                not at end
                    if fu_nom = Wnom and fu_prenom = Wprenom
                        display "Utilisateur trouvé"
-           display fu_nom " " fu_prenom " " fu_mail" "fu_role" "fu_mdp
+           display fu_nom " " fu_prenom " " fu_login" "fu_role" "fu_mdp
            display "Confirmer suppression utilisateur ? (O/N)"
                        accept Wreponse
                        if Wreponse = "O" or Wreponse = "o"
@@ -744,7 +744,7 @@
                        DISPLAY "Numéro : "fu_numutilisateur
                        DISPLAY "Prénom : " fu_prenom
                        DISPLAY "Nom : "fu_nom
-                       DISPLAY "Mail : "fu_mail
+                       DISPLAY "Login : "fu_login
                        DISPLAY "Role : "fu_role
                        DISPLAY "Connecté : "fu_connecte
                        DISPLAY "Mdp : "fu_mdp
